@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs "${project.projectDir}/libdev"
+    }
+}
+
+dependencies {
+    implementation name: 'jrpclightning'
+
+    compile 'io.javalin:javalin:3.9.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
+
+    testImplementation "junit:junit:4.12"
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'io.vincenzopalazzo.lightning.App'
+        )
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'io.vincenzopalazzo.lightning.App'
+}
