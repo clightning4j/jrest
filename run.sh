@@ -6,7 +6,7 @@ NAME_JAR="lightning-rest.jar"
 
 # If the directory not exist I compile the jar
 # and only after I run it.
-if [ "$DIR_JAR" == "" ]; then
+if [ ! -d "$DIR_JAR" ]; then
   ./gradlew clean && ./gradlew jar
 fi
 java -jar $DIR_JAR$NAME_JAR
