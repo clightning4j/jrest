@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id('io.dinject.openapi') version('1.2')
 }
 
 repositories {
@@ -14,6 +15,17 @@ dependencies {
     implementation name: 'jrpclightning'
 
     compile 'io.javalin:javalin:3.9.1'
+    compile 'io.javalin:javalin-openapi:3.9.1'
+    compile 'io.javalin:javalin-bundle:3.9.0'
+    compile 'io.swagger.core.v3:swagger-core:2.0.9'
+    compile 'org.webjars:swagger-ui:3.24.3<'
+    compile 'com.squareup.okhttp3:okhttp:4.3.0'
+    compile 'com.squareup.moshi:moshi-adapters:1.9.2'
+    compile('io.dinject:dinject:1.14')
+    compile('io.dinject:dinject-controller:1.14')
+
+    annotationProcessor('io.dinject:dinject-generator:1.14')
+    annotationProcessor('io.dinject:javalin-generator:1.14')
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
 
     testImplementation "junit:junit:4.12"
