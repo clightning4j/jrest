@@ -13,8 +13,10 @@ import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
+import jrpc.clightning.plugins.annotation.RPCMethod;
+import jrpc.clightning.plugins.annotation.Subscription;
 import jrpc.clightning.plugins.log.CLightningLevelLog;
-import jrpc.clightning.plugins.rpcmethods.RPCMethod;
+import jrpc.clightning.plugins.rpcmethods.AbstractRPCMethod;
 import jrpc.service.converters.JsonConverter;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
 import jrpc.wrapper.response.ErrorResponse;
@@ -29,7 +31,21 @@ public class CLightningRestPlugin extends CLightningPlugin {
         super.addRPCMethod(new CommandServerRestMethod("restserver", "[operation]", "This plugin help to introduce the rest server on C-lightning node."));
     }
 
-    public class CommandServerRestMethod extends RPCMethod {
+    @Subscription(notification = "invoice_creation")
+    public void doInvoiceCreation(CLightningJsonObject data) {
+        log(CLightningLevelLog.WARNING, "Notification invoice_creation received inside the plugin lightning rest");
+    }
+
+    @RPCMethod(
+            name = "annotation_hello",
+            description = "This is only a test"
+    )
+    public void hello(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(CLightningLevelLog.DEBUG, request.toString());
+        response.add("type", "random");
+    }
+
+    public class CommandServerRestMethod extends AbstractRPCMethod {
 
         private Javalin serverInstance;
         private JsonConverter converter = new JsonConverter();
@@ -62,7 +78,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
                 if (operation.equalsIgnoreCase("start")) {
                     if (serverInstance != null) {
-                        serverInstance.start(7003);
+                        serverInstance.start(7001);
 
                         setBitcoinServices(serverInstance);
                         setUtilityServices(serverInstance);
@@ -107,7 +123,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
             );
         }
 
-        private void setUtilityServices(Javalin serverInstance){
+        private void setUtilityServices(Javalin serverInstance) {
             serverInstance.get("/utility/" + Command.GETINFO.getCommandKey().toLowerCase(),
                     ctx -> UtilityServices.getInfo(ctx)
             );
