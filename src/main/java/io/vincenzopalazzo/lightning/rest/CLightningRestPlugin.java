@@ -13,6 +13,8 @@ import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
+import jrpc.clightning.plugins.annotation.Hook;
+import jrpc.clightning.plugins.annotation.PluginOption;
 import jrpc.clightning.plugins.annotation.RPCMethod;
 import jrpc.clightning.plugins.annotation.Subscription;
 import jrpc.clightning.plugins.log.CLightningLevelLog;
@@ -24,6 +26,24 @@ import jrpc.wrapper.response.ErrorResponse;
 public class CLightningRestPlugin extends CLightningPlugin {
 
     private static final String BITCOIN_SECTION = "/bitcoin/";
+    private static final String LIGHTNING_SECTION = "/lightning/";
+    private static final String UTILITY_SECTION = "/utility/";
+
+    @PluginOption(
+            name = "jrest-port",
+            defValue = "7000",
+            typeValue = "int",
+            description = "The port where the rest server will listen"
+    )
+    private int port = 7001;
+
+    protected void readPort() {
+        String portPar = getParameter("jrest-port");
+        log(CLightningLevelLog.WARNING, portPar);
+        if (portPar != null) {
+            port = Integer.parseInt(portPar);
+        }
+    }
 
     @Override
     protected void registerMethod() {
@@ -36,13 +56,10 @@ public class CLightningRestPlugin extends CLightningPlugin {
         log(CLightningLevelLog.WARNING, "Notification invoice_creation received inside the plugin lightning rest");
     }
 
-    @RPCMethod(
-            name = "annotation_hello",
-            description = "This is only a test"
-    )
-    public void hello(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        log(CLightningLevelLog.DEBUG, request.toString());
-        response.add("type", "random");
+    @Hook(hook = "rpc_command")
+    public void logAllRPCCommand(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(CLightningLevelLog.WARNING, request.toString());
+        response.add("result", "continue");
     }
 
     public class CommandServerRestMethod extends AbstractRPCMethod {
@@ -52,20 +69,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
         public CommandServerRestMethod(String name, String usage, String description) {
             super(name, usage, description);
-            Info info = new Info().version("1.0").description("User API");
-            OpenApiOptions options = new OpenApiOptions(info)
-                    .activateAnnotationScanningFor("io.vincenzopalazzo.lightning.rest.services")
-                    .path("/swagger-docs") // endpoint for OpenAPI json
-                    .swagger(new SwaggerOptions("/swagger-ui")) // endpoint for swagger-ui
-                    .reDoc(new ReDocOptions("/redoc")) // endpoint for redoc
-                    .defaultDocumentation(doc -> {
-                        doc.json("500", ErrorResponse.class);
-                        doc.json("503", ErrorResponse.class);
-                    });
-            serverInstance = Javalin.create(config -> {
-                config.registerPlugin(new OpenApiPlugin(options));
-                config.defaultContentType = "application/json";
-            });
+            serverInstance = buildServerInstance();
         }
 
 
@@ -76,42 +80,53 @@ public class CLightningRestPlugin extends CLightningPlugin {
                 JsonArray params = request.get("params").getAsJsonArray();
                 String operation = params.get(0).getAsString();
 
+                if(serverInstance == null) serverInstance = buildServerInstance();
+
                 if (operation.equalsIgnoreCase("start")) {
-                    if (serverInstance != null) {
-                        serverInstance.start(7001);
+                    readPort();
+                    log(CLightningLevelLog.WARNING, "Server on port: " + port);
+                    serverInstance.start(port);
 
-                        setBitcoinServices(serverInstance);
-                        setUtilityServices(serverInstance);
-                        serverInstance.get("/listinvoice", ctx -> ctx.result(converter.serialization(CLightningRPC.getInstance().getListInvoices())));
-                        serverInstance.get("/decodepay", ctx -> ctx.result(converter.serialization(CLightningRPC.getInstance().decodePay(
-                                ctx.queryParam("bolt11")
-                        ))));
+                    setBitcoinServices(serverInstance);
+                    setUtilityServices(serverInstance);
+                    setLightningServices(serverInstance);
 
-                        response.add("status", "running");
-                        response.add("port", serverInstance.port());
-                    }
+                    response.add("status", "running");
+                    response.add("port", serverInstance.port());
                 } else if (operation.equalsIgnoreCase("stop")) {
-                    if (serverInstance != null) {
-                        serverInstance.stop();
-                        response.add("status", "shutdown");
-                        response.add("port", serverInstance.port());
-                        Info info = new Info().version("0.1").description("C-lightning REST API");
-                        OpenApiOptions options = new OpenApiOptions(info)
-                                .activateAnnotationScanningFor("io.vincenzopalazzo.lightning.rest.services")
-                                .path("/swagger-docs") // endpoint for OpenAPI json
-                                .swagger(new SwaggerOptions("/swagger-ui")) // endpoint for swagger-ui
-                                .reDoc(new ReDocOptions("/redoc")) // endpoint for redoc
-                                .defaultDocumentation(doc -> {
-                                    doc.json("500", ErrorResponse.class);
-                                    doc.json("503", ErrorResponse.class);
-                                });
-                        serverInstance = Javalin.create(config -> {
-                            config.registerPlugin(new OpenApiPlugin(options));
-                            config.defaultContentType = "application/json";
-                        });
-                    }
+                    serverInstance.stop();
+                    response.add("status", "shutdown");
+                    response.add("port", serverInstance.port());
+                    serverInstance = null;
                 }
             }
+        }
+
+        private Javalin buildServerInstance(){
+            Info info = new Info().version("0.1").description("C-lightning REST API");
+            OpenApiOptions options = new OpenApiOptions(info)
+                    .activateAnnotationScanningFor("io.vincenzopalazzo.lightning.rest.services")
+                    .path("/jrest-docs") // endpoint for OpenAPI json
+                    .swagger(new SwaggerOptions("/jrest-ui")) // endpoint for swagger-ui
+                    .reDoc(new ReDocOptions("/redoc")) // endpoint for redoc
+                    .defaultDocumentation(doc -> {
+                        doc.json("500", ErrorResponse.class);
+                        doc.json("503", ErrorResponse.class);
+                    });
+            return Javalin.create(config -> {
+                config.registerPlugin(new OpenApiPlugin(options));
+                config.defaultContentType = "application/json";
+            });
+        }
+
+        private void setLightningServices(Javalin serverInstance) {
+            serverInstance.get(LIGHTNING_SECTION + Command.LISTINVOICE.getCommandKey(), ctx ->
+                    ctx.result(converter.serialization(CLightningRPC.getInstance().getListInvoices()
+                    )));
+            serverInstance.get(LIGHTNING_SECTION + Command.DECODEPAY.getCommandKey(), ctx ->
+                    ctx.result(converter.serialization(CLightningRPC.getInstance().decodePay(
+                            ctx.queryParam("bolt11")
+                    ))));
         }
 
         private void setBitcoinServices(Javalin serverInstance) {
@@ -124,7 +139,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
         }
 
         private void setUtilityServices(Javalin serverInstance) {
-            serverInstance.get("/utility/" + Command.GETINFO.getCommandKey().toLowerCase(),
+            serverInstance.get(UTILITY_SECTION + Command.GETINFO.getCommandKey().toLowerCase(),
                     ctx -> UtilityServices.getInfo(ctx)
             );
         }

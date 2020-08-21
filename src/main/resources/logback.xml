@@ -17,7 +17,7 @@
 -->
 <configuration scan="true">
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${user.home}/clightning_java_plugin/lightning-rest.log</file>
+        <file>${user.home}/clightning_java_plugin/lightning_rest.log</file>
         <append>false</append>
         <!-- set immediateFlush to false for much higher logging throughput -->
         <immediateFlush>true</immediateFlush>
@@ -28,11 +28,11 @@
         </encoder>
     </appender>
 
-    <root level="debug">
+    <root level="DEBUG">
         <appender-ref ref="FILE" />
     </root>
 
-    <logger name="jrpc.clightning.plugins" level="debug">
+    <logger name="jrpc.clightning.plugins" level="DEBUG">
         <appender-ref ref="FILE" />
     </logger>
 </configuration>

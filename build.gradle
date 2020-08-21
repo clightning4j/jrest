@@ -7,7 +7,7 @@ plugins {
 repositories {
     mavenCentral()
     flatDir {
-        dirs "${project.projectDir}/libdev"
+        dirs "${project.projectDir}/devlibs"
     }
 }
 
@@ -27,8 +27,6 @@ dependencies {
     annotationProcessor('io.dinject:dinject-generator:1.14')
     annotationProcessor('io.dinject:javalin-generator:1.14')
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
-
-    testImplementation "junit:junit:4.12"
 }
 
 jar {
