@@ -18,7 +18,7 @@ public class BitcoinServices {
             method = HttpMethod.GET,    // only necessary to include when using static method references
             summary = "Generate new address with a type",
             operationId = SERVICE,
-            tags = {"newaddr"},
+                tags = {SERVICE},
             responses = {
                     @OpenApiResponse(status = "200", content = {@OpenApiContent(from = String.class)})
             }
@@ -49,7 +49,7 @@ public class BitcoinServices {
             method = HttpMethod.POST,    // only necessary to include when using static method references
             summary = "Move satoshi from off chain to on chain",
             operationId = SERVICE,
-            tags = {"withdraw"},
+            tags = {SERVICE},
             responses = {
                     @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningBitcoinTx.class)})
             }

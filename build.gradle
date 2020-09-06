@@ -7,12 +7,12 @@ plugins {
 repositories {
     mavenCentral()
     flatDir {
-        dirs "${project.projectDir}/devlibs"
+        dirs "${project.projectDir}/libdev"
     }
 }
 
 dependencies {
-    implementation name: 'jrpclightning'
+    implementation name: 'jrpclightning-0.1.8-SNAPSHOT'
 
     compile 'io.javalin:javalin:3.9.1'
     compile 'io.javalin:javalin-openapi:3.9.1'
@@ -27,6 +27,12 @@ dependencies {
     annotationProcessor('io.dinject:dinject-generator:1.14')
     annotationProcessor('io.dinject:javalin-generator:1.14')
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
+
+    testImplementation('com.squareup.okhttp3:okhttp:4.8.1')
+    testImplementation 'org.mockito:mockito-core:3.5.10'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'com.konghq:unirest-java:3.10.00'
+    testImplementation 'org.assertj:assertj-core:3.11.1'
 }
 
 jar {
@@ -40,6 +46,16 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+}
+
+task createRunnableScript {
+    dependsOn("jar")
+    file("${projectDir}/${project.name}-gen.sh").createNewFile()
+    file("${projectDir}/${project.name}-gen.sh").write(
+            """# Script generated from gradle! By clightning4j
+#!/bin/bash
+${System.getProperties().getProperty("java.home")}/bin/java -jar ${project.buildDir.absolutePath}/libs/${project.name}.jar
+""")
 }
 
 application {

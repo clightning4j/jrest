@@ -17,7 +17,7 @@ public class UtilityServices {
             method = HttpMethod.GET,    // only necessary to include when using static method references
             summary = "Receive c-lightning node info",
             operationId = SERVICE,
-            tags = {"getinfo"},
+            tags = {SERVICE},
             responses = {
                     @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningGetInfo.class)})
             }

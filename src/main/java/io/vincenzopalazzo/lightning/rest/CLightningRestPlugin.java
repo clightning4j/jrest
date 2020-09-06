@@ -8,26 +8,25 @@ import io.javalin.plugin.openapi.ui.ReDocOptions;
 import io.javalin.plugin.openapi.ui.SwaggerOptions;
 import io.swagger.v3.oas.models.info.Info;
 import io.vincenzopalazzo.lightning.rest.services.BitcoinServices;
+import io.vincenzopalazzo.lightning.rest.services.PaymentService;
 import io.vincenzopalazzo.lightning.rest.services.UtilityServices;
-import jrpc.clightning.CLightningRPC;
+import jrpc.clightning.annotation.Hook;
+import jrpc.clightning.annotation.PluginOption;
+import jrpc.clightning.annotation.Subscription;
 import jrpc.clightning.commands.Command;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
-import jrpc.clightning.plugins.annotation.Hook;
-import jrpc.clightning.plugins.annotation.PluginOption;
-import jrpc.clightning.plugins.annotation.RPCMethod;
-import jrpc.clightning.plugins.annotation.Subscription;
-import jrpc.clightning.plugins.log.CLightningLevelLog;
+import jrpc.clightning.plugins.log.PluginLog;
 import jrpc.clightning.plugins.rpcmethods.AbstractRPCMethod;
-import jrpc.service.converters.JsonConverter;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
 import jrpc.wrapper.response.ErrorResponse;
 
 public class CLightningRestPlugin extends CLightningPlugin {
 
-    private static final String BITCOIN_SECTION = "/bitcoin/";
-    private static final String LIGHTNING_SECTION = "/lightning/";
-    private static final String UTILITY_SECTION = "/utility/";
+    private static final String BITCOIN_SECTION = "/bitcoin";
+    private static final String PAYMENT_SECTION = "/payment";
+    private static final String UTILITY_SECTION = "/utility";
+    protected boolean testMode = false;
 
     @PluginOption(
             name = "jrest-port",
@@ -38,12 +37,14 @@ public class CLightningRestPlugin extends CLightningPlugin {
     private int port = 7001;
 
     protected void readPort() {
+        if(testMode) return;
         String portPar = getParameter("jrest-port");
-        log(CLightningLevelLog.WARNING, portPar);
+        logRestPlugin(PluginLog.WARNING, portPar);
         if (portPar != null) {
             port = Integer.parseInt(portPar);
         }
     }
+
 
     @Override
     protected void registerMethod() {
@@ -53,19 +54,57 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
     @Subscription(notification = "invoice_creation")
     public void doInvoiceCreation(CLightningJsonObject data) {
-        log(CLightningLevelLog.WARNING, "Notification invoice_creation received inside the plugin lightning rest");
+        logRestPlugin(PluginLog.WARNING, "Notification invoice_creation received inside the plugin lightning rest");
     }
 
     @Hook(hook = "rpc_command")
     public void logAllRPCCommand(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        log(CLightningLevelLog.WARNING, request.toString());
+       logRestPlugin(PluginLog.WARNING, request.toString());
         response.add("result", "continue");
     }
+
+    public void testModeOne() {
+        this.registerMethod();
+        testMode = true;
+        getRpcMethods().forEach(it -> {
+            if(it.getName().equals("restserver")){
+                CLightningJsonObject request = new CLightningJsonObject();
+                request.add("id", 1);
+                request.add("jsonrpc", "2.0");
+                request.add("jsonrpc", "2.0");
+                JsonArray params = new JsonArray();
+                params.add("start");
+                request.add("params", params);
+                it.doRun(this, request, new CLightningJsonObject());
+            }
+        });
+    }
+
+    public void testModeOff() {
+        getRpcMethods().forEach(it -> {
+            if(it.getName().equals("restserver")){
+                CLightningJsonObject request = new CLightningJsonObject();
+                request.add("id", 1);
+                request.add("jsonrpc", "2.0");
+                JsonArray params = new JsonArray();
+                params.add("stop");
+                request.add("params", params);
+                it.doRun(this, request, new CLightningJsonObject());
+            }
+        });
+        testMode = false;
+    }
+
+    protected void logRestPlugin(PluginLog level, String message){
+        if(!testMode){
+            log(PluginLog.WARNING, message);
+        }
+    }
+
 
     public class CommandServerRestMethod extends AbstractRPCMethod {
 
         private Javalin serverInstance;
-        private JsonConverter converter = new JsonConverter();
 
         public CommandServerRestMethod(String name, String usage, String description) {
             super(name, usage, description);
@@ -75,21 +114,21 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
         @Override
         public void doRun(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-            plugin.log(CLightningLevelLog.DEBUG, "Request from server:\n" + request.toString());
+            logRestPlugin(PluginLog.DEBUG, "Request from server:\n" + request.toString());
             if (request != null) {
                 JsonArray params = request.get("params").getAsJsonArray();
                 String operation = params.get(0).getAsString();
 
-                if(serverInstance == null) serverInstance = buildServerInstance();
+                if (serverInstance == null) serverInstance = buildServerInstance();
 
                 if (operation.equalsIgnoreCase("start")) {
                     readPort();
-                    log(CLightningLevelLog.WARNING, "Server on port: " + port);
+                    logRestPlugin(PluginLog.WARNING, "Server on port: " + port);
                     serverInstance.start(port);
 
                     setBitcoinServices(serverInstance);
                     setUtilityServices(serverInstance);
-                    setLightningServices(serverInstance);
+                    setPaymentServices(serverInstance);
 
                     response.add("status", "running");
                     response.add("port", serverInstance.port());
@@ -102,7 +141,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
             }
         }
 
-        private Javalin buildServerInstance(){
+        private Javalin buildServerInstance() {
             Info info = new Info().version("0.1").description("C-lightning REST API");
             OpenApiOptions options = new OpenApiOptions(info)
                     .activateAnnotationScanningFor("io.vincenzopalazzo.lightning.rest.services")
@@ -119,29 +158,31 @@ public class CLightningRestPlugin extends CLightningPlugin {
             });
         }
 
-        private void setLightningServices(Javalin serverInstance) {
-            serverInstance.get(LIGHTNING_SECTION + Command.LISTINVOICE.getCommandKey(), ctx ->
-                    ctx.result(converter.serialization(CLightningRPC.getInstance().getListInvoices()
-                    )));
-            serverInstance.get(LIGHTNING_SECTION + Command.DECODEPAY.getCommandKey(), ctx ->
-                    ctx.result(converter.serialization(CLightningRPC.getInstance().decodePay(
-                            ctx.queryParam("bolt11")
-                    ))));
+        private void setPaymentServices(Javalin serverInstance) {
+            String url = String.format("%s/%s", PAYMENT_SECTION, Command.LISTINVOICE.getCommandKey());
+            serverInstance.get(url, PaymentService::listInvoice);
+
+            url = String.format("%s/%s", PAYMENT_SECTION, Command.DECODEPAY.getCommandKey());
+            serverInstance.post(url, PaymentService::decodePay);
+
+            url = String.format("%s/%s", PAYMENT_SECTION, Command.DELINVOICE.getCommandKey());
+            serverInstance.delete(url, PaymentService::delInvoice);
+
+            url = String.format("%s/%s", PAYMENT_SECTION, Command.INVOICE.getCommandKey());
+            serverInstance.post(url, PaymentService::invoice);
         }
 
         private void setBitcoinServices(Javalin serverInstance) {
-            serverInstance.get(BITCOIN_SECTION + Command.NEWADDR.getCommandKey().toLowerCase(),
-                    ctx -> BitcoinServices.newAddr(ctx)
-            );
-            serverInstance.post(BITCOIN_SECTION + Command.WITHDRAW.getCommandKey().toLowerCase(),
-                    ctx -> log(CLightningLevelLog.DEBUG, ctx.formParamMap().toString())
-            );
+            String url = String.format("%s/%s", BITCOIN_SECTION, Command.NEWADDR.getCommandKey());
+            serverInstance.get(url, BitcoinServices::newAddr);
+
+            url = String.format("%s/%s", BITCOIN_SECTION, Command.WITHDRAW.getCommandKey());
+            serverInstance.post(url, BitcoinServices::withdraw);
         }
 
         private void setUtilityServices(Javalin serverInstance) {
-            serverInstance.get(UTILITY_SECTION + Command.GETINFO.getCommandKey().toLowerCase(),
-                    ctx -> UtilityServices.getInfo(ctx)
-            );
+            String url = String.format("%s/%s", UTILITY_SECTION, Command.GETINFO.getCommandKey());
+            serverInstance.get(url, UtilityServices::getInfo);
         }
     }
 }
