@@ -38,10 +38,15 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
     protected void readPort() {
         if(testMode) return;
-        String portPar = getParameter("jrest-port");
-        logRestPlugin(PluginLog.WARNING, portPar);
+        Object portPar = getParameter("jrest-port");
+        logRestPlugin(PluginLog.WARNING, String.valueOf(portPar));
         if (portPar != null) {
-            port = Integer.parseInt(portPar);
+            if (portPar instanceof String){
+                //With allow-deprecated-api
+                port = Integer.parseInt((String)portPar);
+            }else{
+                port = (Integer) portPar;
+            }
         }
     }
 
