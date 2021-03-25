@@ -12,9 +12,11 @@ import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
 import jrpc.clightning.annotation.Subscription;
 import jrpc.clightning.commands.Command;
+import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
+import jrpc.clightning.plugins.rpcmethods.AbstractRPCMethod;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
 
 public class CLightningRestPlugin extends CLightningPlugin {
@@ -28,14 +30,64 @@ public class CLightningRestPlugin extends CLightningPlugin {
             description = "The port where the rest server will listen"
     )
     private int port;
+
+    private Javalin serverInstance;
+
+    @RPCMethod(
+            name = "restserver",
+            parameter = "[operation]",
+            description = "This plugin help to introduce the rest server on C-lightning node."
+    )
+    public void runRestServer(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        if (serverInstance == null)
+            serverInstance = ServerUtils.buildServerInstance();
+        plugin.log(PluginLog.DEBUG, "Request from server:\n" + request.toString());
+        JsonArray params = request.get("params").getAsJsonArray();
+        String operation = params.get(0).getAsString();
+        if (operation.equalsIgnoreCase("start")) {
+            plugin.log(PluginLog.WARNING, "Server on port: " + port);
+            if(!serverInstance.server().getStarted())
+                serverInstance.start(port);
+            response.add("status", "running");
+            response.add("port", serverInstance.port());
+        } else if (operation.equalsIgnoreCase("stop")) {
+            if(serverInstance.server().getStarted())
+                serverInstance.stop();
+            response.add("status", "shutdown");
+            response.add("port", serverInstance.port());
+            serverInstance = null;
+        }
+    }
+
+    /*
+    @Subscription(notification = "invoice_creation")
+    public void doInvoiceCreation(CLightningJsonObject data) {
+        this.log(PluginLog.DEBUG, "Notification invoice_creation received inside the plugin lightning rest");
+    }
+
+    @Hook(hook = "rpc_command")
+    public void interceptorRPCCommands(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        plugin.log(PluginLog.DEBUG, request.toString());
+        // TODO Catch the stop method and shutdown the server.
+        response.add("result", "continue");
+    }
+    */
+
+
     public void testModeOne() {
+        this.port = 7000;
+        this.addRPCMethod(new AbstractRPCMethod("restserver", "[operation]", "only for test") {
+            @Override
+            public void doRun(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) throws CLightningException {
+                runRestServer(plugin, request, response);
+            }
+        });
         this.registerMethod();
         testMode = true;
         getRpcMethods().forEach(it -> {
             if(it.getName().equals("restserver")){
                 CLightningJsonObject request = new CLightningJsonObject();
                 request.add("id", 1);
-                request.add("jsonrpc", "2.0");
                 request.add("jsonrpc", "2.0");
                 JsonArray params = new JsonArray();
                 params.add("start");
@@ -59,43 +111,4 @@ public class CLightningRestPlugin extends CLightningPlugin {
         });
         testMode = false;
     }
-    private Javalin serverInstance;
-
-    @RPCMethod(
-            name = "restserver",
-            parameter = "[operation]",
-            description = "This plugin help to introduce the rest server on C-lightning node."
-    )
-    public void runRestServer(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        if (serverInstance == null)
-            serverInstance = ServerUtils.buildServerInstance();
-        plugin.log(PluginLog.DEBUG, "Request from server:\n" + request.toString());
-        JsonArray params = request.get("params").getAsJsonArray();
-        String operation = params.get(0).getAsString();
-        if (operation.equalsIgnoreCase("start")) {
-            plugin.log(PluginLog.WARNING, "Server on port: " + port);
-            serverInstance.start(port);
-            response.add("status", "running");
-            response.add("port", serverInstance.port());
-        } else if (operation.equalsIgnoreCase("stop")) {
-            serverInstance.stop();
-            response.add("status", "shutdown");
-            response.add("port", serverInstance.port());
-            serverInstance = null;
-        }
-    }
-
-    /*
-    @Subscription(notification = "invoice_creation")
-    public void doInvoiceCreation(CLightningJsonObject data) {
-        this.log(PluginLog.DEBUG, "Notification invoice_creation received inside the plugin lightning rest");
-    }
-
-    @Hook(hook = "rpc_command")
-    public void interceptorRPCCommands(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        plugin.log(PluginLog.DEBUG, request.toString());
-        // TODO Catch the stop method and shutdown the server.
-        response.add("result", "continue");
-    }
-    */
 }

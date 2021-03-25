@@ -73,7 +73,7 @@ public class PaymentService {
     }
 
     @OpenApi(
-            path = "/payment/decodepay",            // only necessary to include when using static method references
+            path = "/payment/delInvoice",            // only necessary to include when using static method references
             method = HttpMethod.DELETE,    // only necessary to include when using static method references
             description = "This API cal permit to caller to decode pay from a bolt11",
             summary = "Decode pay from a bolt11",
