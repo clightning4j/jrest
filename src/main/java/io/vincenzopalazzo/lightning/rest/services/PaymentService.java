@@ -3,11 +3,9 @@ package io.vincenzopalazzo.lightning.rest.services;
 import java.util.Objects;
 
 import io.javalin.http.Context;
-import io.javalin.plugin.openapi.annotations.HttpMethod;
-import io.javalin.plugin.openapi.annotations.OpenApi;
-import io.javalin.plugin.openapi.annotations.OpenApiContent;
-import io.javalin.plugin.openapi.annotations.OpenApiResponse;
+import io.javalin.plugin.openapi.annotations.*;
 import jrpc.clightning.CLightningRPC;
+import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningDecodePay;
 import jrpc.clightning.model.CLightningInvoice;
 import jrpc.clightning.model.CLightningListInvoices;
@@ -22,19 +20,26 @@ public class PaymentService {
             summary = "Get list invoice stored inside the node",
             operationId = SERVICE,
             tags = {SERVICE},
+            pathParams = {
+                @OpenApiParam(name="bolt11", required = false, description = "Filter by bolt11, it is null no filtering happen")
+            },
             responses = {
-                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningInvoice.class)})
+                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = UtilsService.class)})
             }
-    ) //TODO complete the documentation
+    )
     public static void listInvoice(Context context) {
-        String bolt11 = context.queryParam("bolt11");
-        CLightningListInvoices invoices;
-        if (bolt11 != null) {
-            invoices = CLightningRPC.getInstance().listInvoices(bolt11);
-        } else {
-            invoices = CLightningRPC.getInstance().listInvoices();
+        try {
+            String bolt11 = context.pathParam("bolt11");
+            CLightningListInvoices invoices;
+            if (bolt11 != null) {
+                invoices = CLightningRPC.getInstance().listInvoices(bolt11);
+            } else {
+                invoices = CLightningRPC.getInstance().listInvoices();
+            }
+            UtilsService.makeSuccessResponse(context, invoices);
+        } catch (CLightningException exception) {
+            UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
         }
-        context.json(invoices.getListInvoice());
     }
 
     @OpenApi(
@@ -44,21 +49,27 @@ public class PaymentService {
             summary = "Decode pay from a bolt11",
             operationId = SERVICE,
             tags = {SERVICE},
+            formParams = {
+              @OpenApiFormParam(name = "bolt11", required = true)
+            },
             responses = {
                     @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningDecodePay.class)})
             }
-    ) //TODO complete the documentation
+    )
     public static void decodePay(Context context){
         String bolt11 = context.formParam("bolt11", String.class)
-                .check(Objects::nonNull)
                 .check(i -> !i.isEmpty())
                 .get();
-        if(bolt11 == null || bolt11.isEmpty()){
-            context.json("bolt1 bull"); //TODO Fail with an error
+        if(bolt11.isEmpty()){
+           UtilsService.makeErrorResponse(context, "bolt11 not valid");
             return;
         }
-        CLightningDecodePay decodePay = CLightningRPC.getInstance().decodePay(bolt11);
-        context.json(decodePay);
+        try {
+            CLightningDecodePay decodePay = CLightningRPC.getInstance().decodePay(bolt11);
+            UtilsService.makeSuccessResponse(context, decodePay);
+        }catch (CLightningException ex) {
+            UtilsService.makeErrorResponse(context, ex.getLocalizedMessage());
+        }
     }
 
     @OpenApi(
@@ -68,22 +79,28 @@ public class PaymentService {
             summary = "Decode pay from a bolt11",
             operationId = SERVICE,
             tags = {SERVICE},
+            formParams = {
+                    @OpenApiFormParam(name = "label", required = true),
+                    @OpenApiFormParam(name = "status", required = true),
+            },
             responses = {
-                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningDecodePay.class)})
+                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningInvoice.class)})
             }
-    ) //TODO complete the documentation
+    )
     public static void delInvoice(Context context){
         String label = context.formParam("label", String.class)
-                .check(Objects::nonNull)
                 .check(i -> !i.isEmpty())
                 .get();
         String status = context.formParam("status", String.class)
-                .check(Objects::nonNull)
                 .check(i -> !i.isEmpty())
                 .get();
 
-        CLightningInvoice invoice = CLightningRPC.getInstance().delInvoice(label, status);
-        context.json(invoice);
+        try {
+            CLightningInvoice invoice = CLightningRPC.getInstance().delInvoice(label, status);
+            UtilsService.makeSuccessResponse(context, invoice);
+        }catch (CLightningException ex) {
+            UtilsService.makeErrorResponse(context, ex.getLocalizedMessage());
+        }
     }
 
     @OpenApi(
@@ -93,17 +110,24 @@ public class PaymentService {
             summary = "Make an invoice",
             operationId = SERVICE,
             tags = {SERVICE},
+            formParams = {
+                @OpenApiFormParam(name = "label", required = true),
+                @OpenApiFormParam(name = "msat", required = true),
+                @OpenApiFormParam(name = "description"),
+                @OpenApiFormParam(name = "expiry"),
+                @OpenApiFormParam(name = "expiry"),
+                @OpenApiFormParam(name = "preImage"),
+                @OpenApiFormParam(name = "exposePrivateChannels"),
+            },
             responses = {
                     @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningInvoice.class)})
             }
     ) //TODO complete the documentation
     public static void invoice(Context context){
         String milliSatoshi = context.formParam("msat", String.class)
-                .check(Objects::nonNull)
                 .check(i -> !i.isEmpty())
                 .get();
         String label = context.formParam("label", String.class)
-                .check(Objects::nonNull)
                 .check(i -> !i.isEmpty())
                 .get();
         String description = context.formParam("description", String.class)
@@ -123,11 +147,16 @@ public class PaymentService {
         if(exposePrivateChannelsString != null && !exposePrivateChannelsString.isEmpty()){
             exposePrivateChannels = Boolean.getBoolean(exposePrivateChannelsString);
         }
+        // TODO: support fallbacks
         //String[] fallbacks = context.queryParam("fallbacks", List<String>.class).get();
 
-        CLightningInvoice invoice = CLightningRPC.getInstance()
-                .invoice(milliSatoshi, label, description, expiry, new String[]{}, preImage, exposePrivateChannels);
-        context.json(invoice);
+        try {
+            CLightningInvoice invoice = CLightningRPC.getInstance()
+                    .invoice(milliSatoshi, label, description, expiry, new String[]{}, preImage, exposePrivateChannels);
+            UtilsService.makeSuccessResponse(context, invoice);
+        }catch (CLightningException ex) {
+            UtilsService.makeErrorResponse(context, ex.getLocalizedMessage());
+        }
     }
 
 }
