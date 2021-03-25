@@ -1,48 +1,29 @@
 package io.vincenzopalazzo.lightning.rest;
 
 import io.javalin.plugin.json.JavalinJson;
-import jrpc.clightning.CLightningRPC;
+import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import jrpc.clightning.exceptions.CLightningException;
-import jrpc.clightning.model.CLightningGetInfo;
-import jrpc.clightning.model.CLightningInvoice;
 import junit.framework.TestCase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
-import org.assertj.core.error.ShouldNotBeEqual;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
-public class ServicesTest {
+public class PaymentServiceTest extends AbstractServiceTest {
 
-    private CLightningRestPlugin app = new CLightningRestPlugin();
-    private CLightningRPC rpc = CLightningRPC.getInstance();
-    private static final String BASE_URL = "http://localhost:7000";
-
-
-    @Before
-    public void init() {
-        app.testModeOne();
-        rpc.listInvoices().getListInvoice().forEach(it -> {
-            rpc.delInvoice(it.getLabel(), it.getStatus());
-        });
-    }
-
-    @After
-    public void tearDown(){
-        app.testModeOff();
-    }
 
     @Test
-    public void GET_getInfoNode() {
+    public void GET_listInvoice() {
+        // payment/listinvoice
         try {
-            CLightningGetInfo getInfo = rpc.getInfo();
-            String jsonResult = JavalinJson.toJson(getInfo);
-            HttpResponse response = Unirest.get(BASE_URL + "/utility/getinfo").asString();
+            var listInvoices = rpc.listInvoices();
+            String jsonResult = JavalinJson.toJson(listInvoices);
+            HttpResponse response = Unirest.get("/payment/listinvoice")
+                    .asString();
+            LOGGER.debug("GET_listInvoice response: " + response.getBody().toString());
             assertThat(response.getStatus()).isEqualTo(200);
             assertThat(response.getBody()).isEqualTo(jsonResult);
         } catch (CLightningException exception) {
@@ -51,14 +32,19 @@ public class ServicesTest {
     }
 
     @Test
-    public void GET_listInvoice() {
+    public void POST_listInvoice() {
         // payment/listinvoice
         try {
-            var listInvoices = rpc.listInvoices();
-            String jsonResult = JavalinJson.toJson(listInvoices.getListInvoice());
-
-            HttpResponse response = Unirest.get(BASE_URL + "/payment/listinvoice")
+            var invoice = this.rpc.invoice("1000", "test", "test");
+            var listInvoice = rpc.listInvoices().getListInvoice();
+            TestCase.assertFalse(listInvoice.isEmpty());
+            invoice = listInvoice.get(0);
+            TestCase.assertNotNull(invoice.getBolt11());
+            String jsonResult = JavalinJson.toJson(invoice);
+            HttpResponse response = Unirest.post("/payment/listinvoice")
+                    .field("label", invoice.getLabel())
                     .asString();
+            LOGGER.debug("GET_listInvoice response: " + response.getBody().toString());
             assertThat(response.getStatus()).isEqualTo(200);
             assertThat(response.getBody()).isEqualTo(jsonResult);
         } catch (CLightningException exception) {
@@ -70,13 +56,14 @@ public class ServicesTest {
     public void POST_decodePay() {
         // payment/listinvoice
         try {
-            var invoice = "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6twvus8g6rfwvs8qun0dfjkxaq8rkx3yf5tcsyz3d73gafnh3cax9rn449d9p5uxz9ezhhypd0elx87sjle52x86fux2ypatgddc6k63n7erqz25le42c4u4ecky03ylcqca784w";
-            var expected = rpc.decodePay(invoice);
+            var invoice = this.rpc.invoice("1000", "test", "test");
+            var expected = rpc.decodePay(invoice.getBolt11());
             String jsonResult = JavalinJson.toJson(expected);
 
-            HttpResponse response = Unirest.post(BASE_URL + "/payment/decodepay")
-                    .field("bolt11", invoice)
+            HttpResponse response = Unirest.post("/payment/decodepay")
+                    .field("bolt11", invoice.getBolt11())
                     .asString();
+            LOGGER.debug("POST_decodePay response: " + response.getBody().toString());
             assertThat(response.getStatus()).isEqualTo(200);
             assertThat(response.getBody()).isEqualTo(jsonResult);
         } catch (CLightningException exception) {
@@ -92,11 +79,13 @@ public class ServicesTest {
             var invoice = rpc.invoice("1000", "test-invoice-" + num, "test");
             invoice = rpc.listInvoices("test-invoice-" + num).getListInvoice().get(0);
             String jsonResult = JavalinJson.toJson(invoice);
+            TestCase.assertNotNull(invoice.getStatus());
+            TestCase.assertNotNull(invoice.getLabel());
 
-            HttpResponse response = Unirest.post(BASE_URL + "/payment/delInvoice")
-                    .field("label", invoice.getLabel())
-                    .field("status", invoice.getStatus())
+            LOGGER.debug("POST_delInvoice expected response: " + jsonResult);
+            HttpResponse response = Unirest.delete("/payment/delinvoice/" + invoice.getLabel())
                     .asString();
+            LOGGER.debug("POST_delInvoice response: " + response.getBody().toString());
             assertThat(response.getStatus()).isEqualTo(200);
             assertThat(response.getBody()).isEqualTo(jsonResult);
         } catch (CLightningException exception) {
@@ -111,11 +100,12 @@ public class ServicesTest {
         try {
             var listInvoice = rpc.listInvoices("test-invoice-" + num).getListInvoice();
             TestCase.assertTrue(listInvoice.isEmpty());
-            HttpResponse response = Unirest.post(BASE_URL + "/payment/invoice")
+            HttpResponse response = Unirest.post("/payment/invoice")
                     .field("msat","1000")
                     .field("label", "test-invoice-" + num)
                     .field("description", "test")
                     .asString();
+            LOGGER.debug("POST_invoice response: " + response.getBody().toString());
             assertThat(response.getStatus()).isEqualTo(200);
             TestCase.assertTrue(response.getBody().toString().contains("bolt11"));
             TestCase.assertTrue(response.getBody().toString().contains("label"));
@@ -125,6 +115,4 @@ public class ServicesTest {
             TestCase.fail(exception.getLocalizedMessage());
         }
     }
-
-
 }

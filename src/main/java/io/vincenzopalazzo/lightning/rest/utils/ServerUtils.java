@@ -44,16 +44,17 @@ public class ServerUtils {
     }
 
     private static void setPaymentServices(Javalin serverInstance) {
-        String url = String.format("%s/%s/:bolt11", PAYMENT_SECTION, Command.LISTINVOICE.getCommandKey());
+        String url = String.format("%s/%s", PAYMENT_SECTION, Command.LISTINVOICE.getCommandKey());
         serverInstance.get(url, PaymentService::listInvoice);
+        serverInstance.post(url, PaymentService::listInvoiceFiltered);
 
-        url = String.format("%s/%s/:bolt11", PAYMENT_SECTION, Command.DECODEPAY.getCommandKey());
+        url = String.format("%s/%s", PAYMENT_SECTION, Command.DECODEPAY.getCommandKey());
         serverInstance.post(url, PaymentService::decodePay);
 
-        url = String.format("%s/%s/:label/:status", PAYMENT_SECTION, Command.DELINVOICE.getCommandKey());
+        url = String.format("%s/%s/:label", PAYMENT_SECTION, Command.DELINVOICE.getCommandKey());
         serverInstance.delete(url, PaymentService::delInvoice);
-        url = String.format("%s/%s", PAYMENT_SECTION, Command.INVOICE.getCommandKey());
 
+        url = String.format("%s/%s", PAYMENT_SECTION, Command.INVOICE.getCommandKey());
         serverInstance.post(url, PaymentService::invoice);
     }
 

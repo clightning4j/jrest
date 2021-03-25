@@ -22,18 +22,21 @@ dependencies {
     compile 'org.webjars:swagger-ui:3.24.3<'
     compile 'com.squareup.okhttp3:okhttp:4.3.0'
     compile 'com.squareup.moshi:moshi-adapters:1.9.2'
-    compile('io.dinject:dinject:1.14')
-    compile('io.dinject:dinject-controller:1.14')
+    compile 'io.dinject:dinject:1.14'
+    compile 'io.dinject:dinject-controller:1.14'
 
-    annotationProcessor('io.dinject:dinject-generator:1.14')
-    annotationProcessor('io.dinject:javalin-generator:1.14')
+    annotationProcessor 'io.dinject:dinject-generator:1.14'
+    annotationProcessor 'io.dinject:javalin-generator:1.14'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
 
-    testImplementation('com.squareup.okhttp3:okhttp:4.8.1')
+    testImplementation 'com.squareup.okhttp3:okhttp:4.8.1'
     testImplementation 'org.mockito:mockito-core:3.5.10'
     testImplementation 'junit:junit:4.12'
     testImplementation 'com.konghq:unirest-java:3.10.00'
     testImplementation 'org.assertj:assertj-core:3.11.1'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'ch.qos.logback:logback-core:1.2.3'
+    testImplementation 'org.slf4j:slf4j-api:1.7.25'
 }
 
 jar {
