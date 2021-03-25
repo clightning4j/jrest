@@ -62,7 +62,7 @@ public class ServerUtils {
         String url = String.format("%s/%s/:type", BITCOIN_SECTION, Command.NEWADDR.getCommandKey());
         serverInstance.get(url, BitcoinServices::newAddr);
 
-        url = String.format("%s/%s/:destination/:satoshi", BITCOIN_SECTION, Command.WITHDRAW.getCommandKey());
+        url = String.format("%s/%s", BITCOIN_SECTION, Command.WITHDRAW.getCommandKey());
         serverInstance.post(url, BitcoinServices::withdraw);
     }
 
@@ -74,6 +74,9 @@ public class ServerUtils {
     private static void setNetworkServices(Javalin servicesInstance) {
         String url = String.format("%s/%s/:nodeId", NETWORK_SECTION, Command.PING.getCommandKey());
         servicesInstance.get(url, NetworkServices::ping);
+
+        url = String.format("%s/%s", NETWORK_SECTION, Command.LISTNODES.getCommandKey());
+        servicesInstance.get(url, NetworkServices::listNodes);
     }
 
 }

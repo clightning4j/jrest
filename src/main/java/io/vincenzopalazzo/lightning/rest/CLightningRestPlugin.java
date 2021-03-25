@@ -59,12 +59,12 @@ public class CLightningRestPlugin extends CLightningPlugin {
         }
     }
 
-    /*
     @Subscription(notification = "invoice_creation")
     public void doInvoiceCreation(CLightningJsonObject data) {
         this.log(PluginLog.DEBUG, "Notification invoice_creation received inside the plugin lightning rest");
     }
 
+/*
     @Hook(hook = "rpc_command")
     public void interceptorRPCCommands(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         plugin.log(PluginLog.DEBUG, request.toString());
@@ -75,7 +75,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
 
 
     public void testModeOne() {
-        this.port = 7000;
+        this.port = 7010;
         this.addRPCMethod(new AbstractRPCMethod("restserver", "[operation]", "only for test") {
             @Override
             public void doRun(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) throws CLightningException {

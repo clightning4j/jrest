@@ -9,10 +9,10 @@ import jrpc.clightning.model.types.AddressType;
 
 public class BitcoinServices {
 
-    private static final String SERVICE = "Bitcoin";
+    private static final String SERVICE = "Bitcoin Services";
 
     @OpenApi(
-            path = "/bitcoin/%",            // only necessary to include when using static method references
+            path = "/bitcoin/newaddr",            // only necessary to include when using static method references
             method = HttpMethod.GET,    // only necessary to include when using static method references
             summary = "Generate new address with a type",
             operationId = SERVICE,
@@ -29,7 +29,7 @@ public class BitcoinServices {
         AddressType type = null;
         if (addressType.equals("p2sh-segwit")) {
             type = AddressType.P2SH_SEGWIT;
-        } else if (addressType.equals("betch32")) {
+        } else if (addressType.equals("bech32")) {
             type = AddressType.BECH32;
         }
         try {

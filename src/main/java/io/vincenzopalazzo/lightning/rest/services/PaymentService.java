@@ -15,7 +15,7 @@ import jrpc.clightning.model.CLightningListInvoices;
 
 public class PaymentService {
 
-    private static final String SERVICE = "Payment";
+    private static final String SERVICE = "Payment Services";
 
     @OpenApi(
             path = "/payment/listinvoice",            // only necessary to include when using static method references

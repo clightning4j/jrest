@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class AbstractServiceTest {
 
-    protected static final String BASE_URL = "http://localhost:7000";
+    protected static final String BASE_URL = "http://localhost:7010";
     protected static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceTest.class);
 
     protected CLightningRestPlugin app = new CLightningRestPlugin();
