@@ -6,10 +6,7 @@ import io.javalin.plugin.openapi.OpenApiPlugin;
 import io.javalin.plugin.openapi.ui.ReDocOptions;
 import io.javalin.plugin.openapi.ui.SwaggerOptions;
 import io.swagger.v3.oas.models.info.Info;
-import io.vincenzopalazzo.lightning.rest.services.BitcoinServices;
-import io.vincenzopalazzo.lightning.rest.services.NetworkServices;
-import io.vincenzopalazzo.lightning.rest.services.PaymentService;
-import io.vincenzopalazzo.lightning.rest.services.UtilityServices;
+import io.vincenzopalazzo.lightning.rest.services.*;
 import jrpc.clightning.commands.Command;
 import jrpc.wrapper.response.ErrorResponse;
 
@@ -19,6 +16,7 @@ public class ServerUtils {
     private static final String PAYMENT_SECTION = "/payment";
     private static final String UTILITY_SECTION = "/utility";
     private static final String NETWORK_SECTION = "/network";
+    private static final String CHANNEL_SECTION = "/channel";
 
     public static Javalin buildServerInstance() {
         Info info = new Info().version("0.1").description("C-lightning REST API");
@@ -40,6 +38,7 @@ public class ServerUtils {
         setUtilityServices(serverInstance);
         setPaymentServices(serverInstance);
         setNetworkServices(serverInstance);
+        setChannelServices(serverInstance);
         return serverInstance;
     }
 
@@ -77,6 +76,15 @@ public class ServerUtils {
 
         url = String.format("%s/%s", NETWORK_SECTION, Command.LISTNODES.getCommandKey());
         servicesInstance.get(url, NetworkServices::listNodes);
+
+        url = String.format("%s/%s", NETWORK_SECTION, Command.LISTNODES.getCommandKey());
+        servicesInstance.post(url, NetworkServices::listNodesWithId);
+    }
+
+    private static void setChannelServices(Javalin serverInstance) {
+        String url = String.format("%s/%s", CHANNEL_SECTION, Command.LISTCHANNELS.getCommandKey());
+        serverInstance.get(url, ChannelServices::listChannels);
+
     }
 
 }

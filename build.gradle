@@ -6,6 +6,9 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
     flatDir {
         dirs "${project.projectDir}/libdev"
         dirs "/home/vincent/Github/JRPClightning/build/libs"
@@ -13,7 +16,9 @@ repositories {
 }
 
 dependencies {
-    implementation name: 'jrpclightning-0.1.9-SNAPSHOT-with-dependencies'
+    //implementation name: 'jrpclightning-0.1.9-SNAPSHOT-with-dependencies'
+    implementation 'io.github.clightning4j:jrpclightning:0.1.9'
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     compile 'io.javalin:javalin:3.9.1'
     compile 'io.javalin:javalin-openapi:3.9.1'

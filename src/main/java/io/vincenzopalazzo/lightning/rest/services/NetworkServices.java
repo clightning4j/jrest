@@ -7,6 +7,7 @@ import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningListNodes;
+import jrpc.clightning.model.types.CLightningNode;
 import jrpc.clightning.model.types.CLightningPing;
 
 public class NetworkServices {
@@ -48,10 +49,34 @@ public class NetworkServices {
                     @OpenApiResponse(status = "500", content = {@OpenApiContent(from = InternalServerErrorResponse.class)})
             }
     )
-    public static void listNodes(Context context) {
+    public static void listNodes(Context ctx) {
         try {
             CLightningListNodes nodes = CLightningRPC.getInstance().listNodes();
-            UtilsService.makeSuccessResponse(context, nodes);
+            UtilsService.makeSuccessResponse(ctx, nodes);
+        }catch (CLightningException ex) {
+            throw new InternalServerErrorResponse(ex.getLocalizedMessage());
+        }
+    }
+
+    @OpenApi(
+            path = "/network/listnodes",            // only necessary to include when using static method references
+            method = HttpMethod.POST,    // only necessary to include when using static method references
+            summary = "Return all the nodes connected to the actual ln node",
+            operationId = SERVICE,
+            tags = {SERVICE},
+            formParams = {
+                    @OpenApiFormParam(name = "nodeId", required = true),
+            },
+            responses = {
+                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningNode.class)}),
+                    @OpenApiResponse(status = "500", content = {@OpenApiContent(from = InternalServerErrorResponse.class)})
+            }
+    ) // TODO move it in the GET request
+    public static void listNodesWithId(Context ctx) {
+        try {
+            String nodeId = ctx.formParam("nodeId");
+            CLightningListNodes nodes = CLightningRPC.getInstance().listNodes(nodeId);
+            UtilsService.makeSuccessResponse(ctx, nodes);
         }catch (CLightningException ex) {
             throw new InternalServerErrorResponse(ex.getLocalizedMessage());
         }

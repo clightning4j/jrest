@@ -1,17 +1,11 @@
 package io.vincenzopalazzo.lightning.rest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import io.javalin.Javalin;
-import io.vincenzopalazzo.lightning.rest.services.BitcoinServices;
-import io.vincenzopalazzo.lightning.rest.services.PaymentService;
-import io.vincenzopalazzo.lightning.rest.services.UtilityServices;
 import io.vincenzopalazzo.lightning.rest.utils.ServerUtils;
-import jrpc.clightning.annotation.Hook;
 import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
 import jrpc.clightning.annotation.Subscription;
-import jrpc.clightning.commands.Command;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;

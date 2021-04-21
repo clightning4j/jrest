@@ -1,6 +1,5 @@
 package io.vincenzopalazzo.lightning.rest;
 
-import io.javalin.plugin.json.JavalinJson;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.model.types.AddressType;
@@ -19,7 +18,7 @@ public class BitcoinServiceTest extends AbstractServiceTest {
     public void GET_newAddressP2sh() {
         assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
         try {
-            var address = CLightningRPC.getInstance().getNewAddress(AddressType.P2SH_SEGWIT);
+            var address = CLightningRPC.getInstance().newAddress(AddressType.P2SH_SEGWIT);
             HttpResponse response = Unirest.get("/bitcoin/newaddr/p2sh-segwit")
                     .asString();
             var toTest = response.getBody().toString();
@@ -37,7 +36,7 @@ public class BitcoinServiceTest extends AbstractServiceTest {
     public void GET_newAddressBech32() {
         assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
         try {
-            var address = CLightningRPC.getInstance().getNewAddress(AddressType.BECH32);
+            var address = CLightningRPC.getInstance().newAddress(AddressType.BECH32);
             HttpResponse response = Unirest.get("/bitcoin/newaddr/bech32")
                     .asString();
             var toTest = response.getBody().toString();
@@ -55,7 +54,7 @@ public class BitcoinServiceTest extends AbstractServiceTest {
     public void GET_withdraw() {
         assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
         try {
-            var address = CLightningRPC.getInstance().getNewAddress(AddressType.BECH32);
+            var address = CLightningRPC.getInstance().newAddress(AddressType.BECH32);
             HttpResponse response = Unirest.post(String.format("/bitcoin/withdraw"))
                     .field("destination", address)
                     .field("satoshi", "10000000")
