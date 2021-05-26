@@ -1,8 +1,10 @@
 package io.vincenzopalazzo.lightning.rest;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import io.vincenzopalazzo.lightning.rest.utils.ServerUtils;
+import jrpc.clightning.annotation.Hook;
 import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
 import jrpc.clightning.annotation.Subscription;
@@ -58,14 +60,18 @@ public class CLightningRestPlugin extends CLightningPlugin {
         this.log(PluginLog.DEBUG, "Notification invoice_creation received inside the plugin lightning rest");
     }
 
-/*
     @Hook(hook = "rpc_command")
     public void interceptorRPCCommands(CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        plugin.log(PluginLog.DEBUG, request.toString());
-        // TODO Catch the stop method and shutdown the server.
+        JsonObject params = request.get("params").getAsJsonObject();
+        if (params.has("rpc_command")) {
+            JsonObject rpcMethod = params.get("rpc_command").getAsJsonObject();
+            if (rpcMethod.get("method").getAsString().equals("stop")) {
+                this.serverInstance.stop();
+                plugin.log(PluginLog.INFO, "Stopping Server Instance");
+            }
+        }
         response.add("result", "continue");
     }
-    */
 
 
     public void testModeOne() {

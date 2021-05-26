@@ -1,12 +1,12 @@
 package io.vincenzopalazzo.lightning.rest.services;
 
 import io.javalin.http.Context;
-import io.javalin.plugin.openapi.annotations.HttpMethod;
-import io.javalin.plugin.openapi.annotations.OpenApi;
-import io.javalin.plugin.openapi.annotations.OpenApiContent;
-import io.javalin.plugin.openapi.annotations.OpenApiResponse;
+import io.javalin.plugin.openapi.annotations.*;
 import jrpc.clightning.CLightningRPC;
+import jrpc.clightning.exceptions.CLightningException;
+import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningGetInfo;
+import jrpc.clightning.model.CLightningListFounds;
 
 public class UtilityServices {
 
@@ -24,5 +24,31 @@ public class UtilityServices {
     )
     public static void getInfo(Context context){
         context.json(CLightningRPC.getInstance().getInfo());
+    }
+
+    @OpenApi(
+            path = "/utility/listfounds",
+            method = HttpMethod.GET,
+            summary = "displays all funds available, either in unspent outputs (UTXOs) in the internal wallet or funds locked in currently open channels",
+            operationId = SERVICE,
+            tags = {SERVICE},
+            pathParams = {
+                    @OpenApiParam(name = "spent", description = "if true, then the outputs will include spent outputs in addition to the unspent ones", type = Boolean.class)
+            },
+            responses = {
+                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningListFounds.class)})
+            }
+    )
+    public static void listFunds(Context context) {
+        Boolean spent = context.formParam("spent", Boolean.class).getOrNull();
+        if (spent == null)
+            spent = false;
+        try {
+            //TODO add method in the list funds
+            CLightningListFounds result = CLightningRPC.getInstance().listFunds();
+            UtilsService.makeSuccessResponse(context, result);
+        } catch (CLightningException | CommandException exception) {
+            UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
+        }
     }
 }

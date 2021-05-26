@@ -68,6 +68,9 @@ public class ServerUtils {
     private static void setUtilityServices(Javalin serverInstance) {
         String url = String.format("%s/%s", UTILITY_SECTION, Command.GETINFO.getCommandKey());
         serverInstance.get(url, UtilityServices::getInfo);
+
+        url = String.format("%s/%s", UTILITY_SECTION, Command.LISTFOUNDS.getCommandKey());
+        serverInstance.get(url, UtilityServices::listFunds);
     }
 
     private static void setNetworkServices(Javalin servicesInstance) {
