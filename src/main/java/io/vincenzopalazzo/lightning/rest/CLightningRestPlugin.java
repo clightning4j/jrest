@@ -65,7 +65,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
         JsonObject params = request.get("params").getAsJsonObject();
         if (params.has("rpc_command")) {
             JsonObject rpcMethod = params.get("rpc_command").getAsJsonObject();
-            if (rpcMethod.get("method").getAsString().equals("stop")) {
+            if (rpcMethod.get("method").getAsString().equals("stop") && this.serverInstance != null) {
                 this.serverInstance.stop();
                 plugin.log(PluginLog.INFO, "Stopping Server Instance");
             }
