@@ -26,14 +26,6 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="j.service.socket.UnixDomainSocketRpc" level="OFF">
-        <appender-ref ref="STDOUT" />
-    </logger>
-
-    <logger name="jrpc.clightning" level="OFF">
-        <appender-ref ref="STDOUT" />
-    </logger>
-
     <logger name="io.vincenzopalazzo.lightning.rest" level="DEBUG">
         <appender-ref ref="STDOUT" />
     </logger>
