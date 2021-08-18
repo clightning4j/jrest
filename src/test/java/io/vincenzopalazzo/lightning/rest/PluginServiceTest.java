@@ -30,9 +30,9 @@ public class PluginServiceTest extends AbstractServiceTest {
                 }
             });
             TestCase.assertTrue(enable.get());
-            var response = Unirest.get("/plugin/diagnostic").asString();
-            LOGGER.debug("GET_diagnostic response: " + response.getBody());
-            LOGGER.debug("GET_diagnostic status: " + response.getStatusText());
+            var response = Unirest.get("/plugin/diagnostic"+"?metric_id=1").asString();
+            System.out.println("GET_diagnostic response: " + response.getBody());
+            System.out.println("GET_diagnostic status: " + response.getStatusText());
             TestCase.assertTrue(response.isSuccess());
         } catch (CLightningException exception) {
             TestCase.fail(exception.getLocalizedMessage());
