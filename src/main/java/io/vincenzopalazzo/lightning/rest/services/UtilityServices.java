@@ -6,7 +6,7 @@ import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningGetInfo;
-import jrpc.clightning.model.CLightningListFounds;
+import jrpc.clightning.model.CLightningListFunds;
 
 public class UtilityServices {
 
@@ -36,7 +36,7 @@ public class UtilityServices {
                     @OpenApiParam(name = "spent", description = "if true, then the outputs will include spent outputs in addition to the unspent ones", type = Boolean.class)
             },
             responses = {
-                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningListFounds.class)})
+                    @OpenApiResponse(status = "200", content = {@OpenApiContent(from = CLightningListFunds.class)})
             }
     )
     public static void listFunds(Context context) {
@@ -45,7 +45,7 @@ public class UtilityServices {
             spent = false;
         try {
             //TODO add method in the list funds
-            CLightningListFounds result = CLightningRPC.getInstance().listFunds();
+            var result = CLightningRPC.getInstance().listFunds();
             UtilsService.makeSuccessResponse(context, result);
         } catch (CLightningException | CommandException exception) {
             UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
