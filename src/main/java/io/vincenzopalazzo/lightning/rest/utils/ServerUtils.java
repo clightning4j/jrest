@@ -98,7 +98,6 @@ public class ServerUtils {
     serverInstance.get(url, ChannelServices::listChannels);
   }
 
-  // TODO test this method
   private static void setPluginServices(Javalin serverInstance) {
     CLightningHelp help = CLightningRPC.getInstance().help();
     help.getHelpItems().parallelStream()

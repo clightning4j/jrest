@@ -3,7 +3,14 @@ package io.vincenzopalazzo.lightning.rest.services;
 import io.javalin.http.Context;
 import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
+import io.vincenzopalazzo.lightning.rest.model.rpc.plugins.CLightningDiagnostic;
+import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
+import jrpc.clightning.CLightningRPC;
+import jrpc.clightning.exceptions.CLightningException;
+import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningListInvoices;
+
+import java.util.HashMap;
 
 public class PluginServices {
 
@@ -24,8 +31,14 @@ public class PluginServices {
             }
     )
     public static void diagnostic(Context context) {
-        Integer spent = context.formParam("metric_id", Integer.class).getOrNull();
-        //TODO make the wrapper method if the plugin is registered
-        UtilsService.makeErrorResponse(context, "Not implemented yet");
+        Integer metricId = context.formParam("metric_id", Integer.class).getOrNull();
+        HashMap<String, Object> payload = new HashMap<>();
+        payload.put("metric_id", metricId);
+        CLightningDiagnostic result = CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, payload);
+        try {
+            UtilsService.makeSuccessResponse(context, result);
+        } catch (CLightningException | CommandException exception) {
+            UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
+        }
     }
 }
