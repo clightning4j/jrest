@@ -38,6 +38,7 @@ public class ServerUtils {
     Javalin serverInstance =
         Javalin.create(
             config -> {
+              config.enableCorsForAllOrigins();
               config.registerPlugin(new OpenApiPlugin(options));
               config.defaultContentType = "application/json";
             });
