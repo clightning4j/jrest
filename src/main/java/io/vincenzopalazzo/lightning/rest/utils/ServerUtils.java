@@ -1,16 +1,22 @@
 package io.vincenzopalazzo.lightning.rest.utils;
 
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import io.javalin.plugin.openapi.OpenApiOptions;
 import io.javalin.plugin.openapi.OpenApiPlugin;
 import io.javalin.plugin.openapi.ui.ReDocOptions;
 import io.javalin.plugin.openapi.ui.SwaggerOptions;
 import io.swagger.v3.oas.models.info.Info;
 import io.vincenzopalazzo.lightning.rest.services.*;
+import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
+import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningRPCManager;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
 import jrpc.clightning.model.CLightningHelp;
 import jrpc.clightning.model.CLightningListConfigs;
+import jrpc.clightning.plugins.CLightningPlugin;
+import jrpc.clightning.plugins.ICLightningPlugin;
+import jrpc.clightning.plugins.log.PluginLog;
 import jrpc.wrapper.response.ErrorResponse;
 
 public class ServerUtils {
@@ -22,8 +28,11 @@ public class ServerUtils {
   private static final String CHANNEL_SECTION = "/channel";
   private static final String PLUGIN_SECTION = "/plugin";
 
-  public static Javalin buildServerInstance() {
+  public static Javalin buildServerInstance(ICLightningPlugin plugin) {
     Info info = new Info().version("0.1").description("C-lightning REST API");
+
+    CLightningRPCManager.registerMethods();
+
     OpenApiOptions options =
         new OpenApiOptions(info)
             .activateAnnotationScanningFor("io.vincenzopalazzo.lightning.rest.services")
@@ -48,7 +57,7 @@ public class ServerUtils {
     setPaymentServices(serverInstance);
     setNetworkServices(serverInstance);
     setChannelServices(serverInstance);
-    setPluginServices(serverInstance);
+    setPluginServices(serverInstance, plugin);
     return serverInstance;
   }
 
@@ -99,14 +108,15 @@ public class ServerUtils {
     serverInstance.get(url, ChannelServices::listChannels);
   }
 
-  private static void setPluginServices(Javalin serverInstance) {
+  private static void setPluginServices(Javalin serverInstance, ICLightningPlugin plugin) {
     CLightningHelp help = CLightningRPC.getInstance().help();
     help.getHelpItems().parallelStream()
         .forEach(
             info -> {
               if (info.getCommand().contains("diagnostic")) {
-                String url = String.format("%s/%s", PLUGIN_SECTION, "diagnostic");
-                serverInstance.get(url, PluginServices::diagnostic);
+                plugin.log(PluginLog.INFO, "Register the diagnostic method to the REST API");
+                String url = String.format("%s/%s", PLUGIN_SECTION, CLightningCommand.DIAGNOSTIC.getCommandKey());
+                serverInstance.get(url, ctx -> PluginServices.diagnostic(ctx, plugin));
               }
             });
   }

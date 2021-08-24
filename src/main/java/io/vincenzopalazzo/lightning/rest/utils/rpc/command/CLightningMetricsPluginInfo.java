@@ -1,7 +1,6 @@
 package io.vincenzopalazzo.lightning.rest.utils.rpc.command;
 
 import com.google.gson.reflect.TypeToken;
-import io.vincenzopalazzo.lightning.rest.model.rpc.plugins.CLightningDiagnostic;
 import io.vincenzopalazzo.lightning.rest.model.rpc.type.MetricsPluginInfo;
 import jrpc.clightning.annotation.RPCCommand;
 import jrpc.clightning.commands.AbstractRPCCommand;

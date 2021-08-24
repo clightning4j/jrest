@@ -22,11 +22,12 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="io.vincenzopalazzo.lightning.rest" level="DEBUG">
-        <appender-ref ref="STDOUT" />
-    </logger>
+    <logger name="jrpc.clightning.plugins" level="INFO"/>
+    <logger name="jrpc.clightning" level="INFO"/>
+    <logger name="io.vincenzopalazzo.lightning.rest" level="INFO"/>
+    <logger name="jrpc.service.socket" level="DEBUG"/>
 </configuration>

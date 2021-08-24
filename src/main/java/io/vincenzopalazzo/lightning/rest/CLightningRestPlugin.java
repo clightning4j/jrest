@@ -57,13 +57,13 @@ public class CLightningRestPlugin extends CLightningPlugin {
       timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                  serverInstance = ServerUtils.buildServerInstance();
+                  serverInstance = ServerUtils.buildServerInstance(plugin);
                   serverInstance.start();
                   onStartupCalled = true;
                   timer.cancel();
                 }
               },
-              1000);
+              2000);
     }
   }
 
@@ -76,8 +76,14 @@ public class CLightningRestPlugin extends CLightningPlugin {
     if (onStartupCalled != null && !onStartupCalled) {
         response.add("message", "Waiting first initialization by c-lightning");
     } else {
-      if (serverInstance == null) serverInstance = ServerUtils.buildServerInstance();
+      if (serverInstance == null) serverInstance = ServerUtils.buildServerInstance(plugin);
+      if (!request.get("params").isJsonArray())
+        throw new CLightningPluginException(-1, "Params is not a JSON array");
       JsonArray params = request.get("params").getAsJsonArray();
+      if (params.isEmpty()) {
+        response.add("error", "JSON array is empty we need to know the operation, start or stop");
+        return;
+      }
       String operation = params.get(0).getAsString();
       switch (operation) {
         case "start":
@@ -114,6 +120,11 @@ public class CLightningRestPlugin extends CLightningPlugin {
   @Hook(hook = "rpc_command")
   public void interceptorRPCCommands(
       CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+    if (!request.get("params").isJsonObject()) {
+      plugin.log(PluginLog.ERROR, "rpc_command object need to be a JSON Object, we receive the following response \n" + request.getAsString());
+      response.add("result", "continue");
+      return;
+    }
     JsonObject params = request.get("params").getAsJsonObject();
     if (params.has("rpc_command")) {
       JsonObject rpcMethod = params.get("rpc_command").getAsJsonObject();

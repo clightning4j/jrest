@@ -24,9 +24,7 @@ public class AbstractServiceTest {
     @Before
     public void init() {
         app.testModeOne();
-        rpc.listInvoices().getListInvoice().forEach(it -> {
-            rpc.delInvoice(it.getLabel(), it.getStatus());
-        });
+        rpc.listInvoices().getListInvoice().forEach(it -> rpc.delInvoice(it.getLabel(), it.getStatus()));
     }
 
     @After

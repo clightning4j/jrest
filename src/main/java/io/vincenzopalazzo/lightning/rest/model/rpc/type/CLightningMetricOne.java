@@ -1,24 +1,29 @@
 package io.vincenzopalazzo.lightning.rest.model.rpc.type;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import io.vincenzopalazzo.lightning.rest.model.rpc.type.MetricsChannelsInfo;
-import io.vincenzopalazzo.lightning.rest.model.rpc.type.MetricsOsInfo;
-import io.vincenzopalazzo.lightning.rest.model.rpc.type.StatusNode;
 
 import java.util.List;
 import java.util.Set;
 
 public class CLightningMetricOne {
+    @Expose
     @SerializedName("metric_name")
     private String metricName;
+    @Expose
     private String color;
+    @Expose
     @SerializedName("node_id")
     private String nodeId;
+    @Expose
     @SerializedName("os_info")
     private MetricsOsInfo osInfo;
+    @Expose
     private String timezone;
+    @Expose
     @SerializedName("up_time")
     private List<StatusNode> upTime;
+    @Expose
     @SerializedName("channels_info")
     private Set<MetricsChannelsInfo> channelsInfo;
 

@@ -1,26 +1,38 @@
 package io.vincenzopalazzo.lightning.rest.model.rpc.type;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.math.BigInteger;
 import java.util.List;
 
 public class MetricsChannelsInfo {
+    @Expose
     @SerializedName("channel_id")
     private String channelId;
+    @Expose
     @SerializedName("node_alias")
     private String nodeAlias;
+    @Expose
     @SerializedName("node_id")
     private String nodeId;
+    @Expose
     private String color;
+    @Expose
     private String direction;
+    @Expose
     private BigInteger capacity;
+    @Expose
     @SerializedName("last_update")
     private BigInteger lastUpdate;
+    @Expose
     private List<PaymentInfo> forwards;
+    @Expose
     private Boolean online;
+    @Expose
     @SerializedName("public")
     private Boolean publicChannel;
+    @Expose
     @SerializedName("up_times")
     private List<UptimeChannel> upTimes;
 
@@ -82,7 +94,9 @@ public class MetricsChannelsInfo {
     }
 
     public static class UptimeChannel {
+        @Expose
         private String status;
+        @Expose
         private BigInteger timestamp;
 
         public String getStatus() {
@@ -95,11 +109,15 @@ public class MetricsChannelsInfo {
     }
 
     public static class PaymentInfo {
+        @Expose
         private String direction;
+        @Expose
         @SerializedName("failure_code")
         private Integer failureCode;
+        @Expose
         @SerializedName("failure_reason")
         private String failureReason;
+        @Expose
         private String status;
 
         public String getDirection() {
