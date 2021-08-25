@@ -7,12 +7,10 @@ import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningGetInfo;
-import jrpc.clightning.model.CLightningHelp;
 import jrpc.service.converters.JsonConverter;
 import junit.framework.TestCase;
 import kong.unirest.Unirest;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -42,9 +40,8 @@ public class PluginServiceTest extends AbstractServiceTest {
     public void GET_diagnostic() {
         assumeThat(enable.get(), is(true));
         try {
-            TestCase.assertTrue(enable.get());
             var response = Unirest.get("/plugin/diagnostic")
-                    .queryString("metrics_id", "1,")
+                    .queryString("metrics_id", "1")
                     .asString();
             var body = response.getBody();
             LOGGER.debug("GET_diagnostic response: " + body);
@@ -65,7 +62,9 @@ public class PluginServiceTest extends AbstractServiceTest {
     public void GET_metricsOneFromMap() {
         assumeThat(enable.get(), is(true));
         try {
-            var response = Unirest.get("/plugin/diagnostic"+"?metrics_id=1").asString();
+            var response = Unirest.get("/plugin/diagnostic")
+                    .queryString("metrics_id", "1")
+                    .asString();
             var body = response.getBody();
             LOGGER.debug("GET_diagnostic response: " + body);
             LOGGER.debug("GET_diagnostic status: " + response.getStatusText());

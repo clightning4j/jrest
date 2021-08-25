@@ -58,7 +58,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
                 @Override
                 public void run() {
                   serverInstance = ServerUtils.buildServerInstance(plugin);
-                  serverInstance.start();
+                  serverInstance.start(port);
                   onStartupCalled = true;
                   timer.cancel();
                 }

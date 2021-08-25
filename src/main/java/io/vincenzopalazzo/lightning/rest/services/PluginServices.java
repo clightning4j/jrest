@@ -42,7 +42,7 @@ public class PluginServices {
       Integer metricId = context.queryParam("metric_id", Integer.class).getOrNull();
       String metricsId = context.queryParam("metrics_id", String.class).getOrNull();
       HashMap<String, Object> payload = new HashMap<>();
-      if ((metricsId != null || !metricsId.isEmpty()) && metricId != null)
+      if ((metricsId != null && !metricsId.isEmpty()) && metricId != null)
         UtilsService.makeErrorResponse(context, "Specified metric_id or metrics_id not both");
       if (metricId != null) {
         plugin.log(PluginLog.INFO, "Metric id requested " + metricId);

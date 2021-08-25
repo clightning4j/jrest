@@ -3,7 +3,6 @@ package io.vincenzopalazzo.lightning.rest.model.rpc.type;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.math.BigInteger;
 import java.util.List;
 
 public class MetricsChannelsInfo {
@@ -21,10 +20,10 @@ public class MetricsChannelsInfo {
     @Expose
     private String direction;
     @Expose
-    private BigInteger capacity;
+    private Long capacity;
     @Expose
     @SerializedName("last_update")
-    private BigInteger lastUpdate;
+    private Long lastUpdate;
     @Expose
     private List<PaymentInfo> forwards;
     @Expose
@@ -56,11 +55,11 @@ public class MetricsChannelsInfo {
         return direction;
     }
 
-    public BigInteger getCapacity() {
+    public Long getCapacity() {
         return capacity;
     }
 
-    public BigInteger getLastUpdate() {
+    public Long getLastUpdate() {
         return lastUpdate;
     }
 
@@ -97,13 +96,13 @@ public class MetricsChannelsInfo {
         @Expose
         private String status;
         @Expose
-        private BigInteger timestamp;
+        private Long timestamp;
 
         public String getStatus() {
             return status;
         }
 
-        public BigInteger getTimestamp() {
+        public Long getTimestamp() {
             return timestamp;
         }
     }

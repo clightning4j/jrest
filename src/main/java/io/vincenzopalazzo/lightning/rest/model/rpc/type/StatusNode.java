@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.math.BigInteger;
-import java.util.Date;
 
 public class StatusNode {
 
@@ -16,7 +15,7 @@ public class StatusNode {
     @Expose
     private PaymentsInfo forwards;
     @Expose
-    private BigInteger timestamp;
+    private Long timestamp;
 
     public ChannelsInfo getChannels() {
         return channels;
@@ -30,13 +29,13 @@ public class StatusNode {
         return forwards;
     }
 
-    public BigInteger getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
     public static class ChannelsInfo {
         @SerializedName("tot_channels")
-        private BigInteger totChannels;
+        private Long totChannels;
         private ChannelSummary summary;
 
         public ChannelSummary getSummary() {
