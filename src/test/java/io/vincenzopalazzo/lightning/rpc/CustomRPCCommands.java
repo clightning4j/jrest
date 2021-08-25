@@ -1,19 +1,18 @@
 package io.vincenzopalazzo.lightning.rpc;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assume.assumeThat;
+
 import io.vincenzopalazzo.lightning.rest.model.rpc.plugins.CLightningDiagnostic;
 import io.vincenzopalazzo.lightning.rest.model.rpc.type.CLightningMetricOne;
 import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
 import io.vincenzopalazzo.lightning.rest.utils.rpc.command.CLightningDiagnosticRPC;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import jrpc.clightning.CLightningRPC;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assume.assumeThat;
 
 public class CustomRPCCommands {
 
@@ -24,12 +23,12 @@ public class CustomRPCCommands {
     enable = new AtomicBoolean(false);
     var help = CLightningRPC.getInstance().help();
     help.getHelpItems().parallelStream()
-            .forEach(
-                    it -> {
-                      if (it.getCommand().contains("diagnostic")) {
-                        enable.set(true);
-                      }
-                    });
+        .forEach(
+            it -> {
+              if (it.getCommand().contains("diagnostic")) {
+                enable.set(true);
+              }
+            });
     CLightningRPC.getInstance()
         .registerCommand(CLightningCommand.DIAGNOSTIC, new CLightningDiagnosticRPC());
   }
