@@ -23,8 +23,9 @@ public class PluginServiceTest extends AbstractServiceTest {
 
     private AtomicBoolean enable;
 
-    @Before
+    @Override
     public void init() {
+        super.init();
         enable = new AtomicBoolean(false);
         var help = CLightningRPC.getInstance().help();
         help.getHelpItems()
@@ -38,7 +39,7 @@ public class PluginServiceTest extends AbstractServiceTest {
 
     @Test
     public void GET_diagnostic() {
-        assumeThat(enable.get(), is(true));
+       assumeThat(enable.get(), is(true));
         try {
             var response = Unirest.get("/plugin/diagnostic")
                     .queryString("metrics_id", "1")
@@ -52,7 +53,10 @@ public class PluginServiceTest extends AbstractServiceTest {
             params.put("metrics_id", "1");
             CLightningDiagnostic expectedDiagnostic = CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
             var expectedString = converter.serialization(expectedDiagnostic);
-            TestCase.assertEquals(expectedString, body);
+            // The number in JSON are floating point, we need to make a cast to make sure that it is a correct
+            // type in the body. We use the JsonConvert of JRPCLightning that implement all these stuff for us.
+            CLightningDiagnostic restResponse = (CLightningDiagnostic) converter.deserialization(body, CLightningDiagnostic.class);
+            TestCase.assertEquals(expectedString, converter.serialization(restResponse));
         } catch (CLightningException exception) {
             TestCase.fail(exception.getLocalizedMessage());
         }
@@ -60,7 +64,7 @@ public class PluginServiceTest extends AbstractServiceTest {
 
     @Test
     public void GET_metricsOneFromMap() {
-        assumeThat(enable.get(), is(true));
+       assumeThat(enable.get(), is(true));
         try {
             var response = Unirest.get("/plugin/diagnostic")
                     .queryString("metrics_id", "1")
@@ -70,7 +74,6 @@ public class PluginServiceTest extends AbstractServiceTest {
             LOGGER.debug("GET_diagnostic status: " + response.getStatusText());
             TestCase.assertTrue(response.isSuccess());
             JsonConverter converter = new JsonConverter();
-            TestCase.fail(body);
             CLightningDiagnostic diagnostic = (CLightningDiagnostic) converter.deserialization(body, CLightningDiagnostic.class);
             TestCase.assertFalse(diagnostic.singleMetrics());
             TestCase.assertTrue(diagnostic.allMetrics());
