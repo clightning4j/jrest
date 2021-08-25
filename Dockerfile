@@ -13,4 +13,6 @@ RUN lightningd --disable-plugin=/opt/lightning-rest/lightning-rest-gen.sh \
 COPY ./scripts/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
+RUN lightning-cli --testnet getinfo
+
 CMD ["./entrypoint.sh"]
