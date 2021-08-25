@@ -5,14 +5,10 @@ import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
 import io.vincenzopalazzo.lightning.rest.model.rpc.plugins.CLightningDiagnostic;
 import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
+import java.util.HashMap;
 import jrpc.clightning.CLightningRPC;
-import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
-import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
-import org.reflections.util.Utils;
-
-import java.util.HashMap;
 
 public class PluginServices {
 
@@ -54,7 +50,8 @@ public class PluginServices {
       }
       if (payload.isEmpty())
         UtilsService.makeErrorResponse(context, plugin, "payload to call diagnostic method empty");
-      CLightningDiagnostic result = CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, payload);
+      CLightningDiagnostic result =
+          CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, payload);
       if (result == null)
         UtilsService.makeErrorResponse(context, plugin, "Result from diagnostic is null");
       UtilsService.makeSuccessResponse(context, result);

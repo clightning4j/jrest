@@ -3,25 +3,27 @@ package io.vincenzopalazzo.lightning.rest.model.rpc.type;
 import com.google.gson.annotations.SerializedName;
 
 public class MetricsPluginInfo {
-    private String name;
-    private String version;
-    @SerializedName("lang_version")
-    private String langVersion;
-    private String architecture;
+  private String name;
+  private String version;
 
-    public String getName() {
-        return name;
-    }
+  @SerializedName("lang_version")
+  private String langVersion;
 
-    public String getVersion() {
-        return version;
-    }
+  private String architecture;
 
-    public String getLangVersion() {
-        return langVersion;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getArchitecture() {
-        return architecture;
-    }
+  public String getVersion() {
+    return version;
+  }
+
+  public String getLangVersion() {
+    return langVersion;
+  }
+
+  public String getArchitecture() {
+    return architecture;
+  }
 }

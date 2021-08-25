@@ -7,8 +7,8 @@ import io.vincenzopalazzo.lightning.rest.CLightningRestPlugin;
 
 public class App {
 
-    public static void main( String[] args ) throws Exception {
-        CLightningRestPlugin restPlugin = new CLightningRestPlugin();
-        restPlugin.start();
-    }
+  public static void main(String[] args) throws Exception {
+    CLightningRestPlugin restPlugin = new CLightningRestPlugin();
+    restPlugin.start();
+  }
 }

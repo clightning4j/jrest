@@ -1,7 +1,6 @@
 package io.vincenzopalazzo.lightning.rest.utils;
 
 import io.javalin.Javalin;
-import io.javalin.http.Context;
 import io.javalin.plugin.openapi.OpenApiOptions;
 import io.javalin.plugin.openapi.OpenApiPlugin;
 import io.javalin.plugin.openapi.ui.ReDocOptions;
@@ -13,8 +12,6 @@ import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningRPCManager;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
 import jrpc.clightning.model.CLightningHelp;
-import jrpc.clightning.model.CLightningListConfigs;
-import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
 import jrpc.wrapper.response.ErrorResponse;
@@ -115,7 +112,9 @@ public class ServerUtils {
             info -> {
               if (info.getCommand().contains("diagnostic")) {
                 plugin.log(PluginLog.INFO, "Register the diagnostic method to the REST API");
-                String url = String.format("%s/%s", PLUGIN_SECTION, CLightningCommand.DIAGNOSTIC.getCommandKey());
+                String url =
+                    String.format(
+                        "%s/%s", PLUGIN_SECTION, CLightningCommand.DIAGNOSTIC.getCommandKey());
                 serverInstance.get(url, ctx -> PluginServices.diagnostic(ctx, plugin));
               }
             });
