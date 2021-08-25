@@ -1,0 +1,10 @@
+name: Integration testing
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Integration testing
+        run: |
+          docker-compose up --exit-code-from jrest --quiet-pull

@@ -10,4 +10,7 @@ RUN lightningd --disable-plugin=/opt/lightning-rest/lightning-rest-gen.sh \
     --plugin=/opt/btcli4j/btcli4j-gen.sh \
     --daemon
 
-CMD ["./workdir/entrypoint.sh"]
+COPY ./docker/entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
