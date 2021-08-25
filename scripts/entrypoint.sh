@@ -1,2 +1,2 @@
 #! /bin/bash
-cd code && ./gradlew test
+cd /code && ./gradlew test
