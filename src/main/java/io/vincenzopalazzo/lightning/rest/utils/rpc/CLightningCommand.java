@@ -1,20 +1,19 @@
 package io.vincenzopalazzo.lightning.rest.utils.rpc;
 
+import java.util.Locale;
 import jrpc.clightning.commands.ICommandKey;
 
-import java.util.Locale;
-
 public enum CLightningCommand implements ICommandKey {
-    DIAGNOSTIC("diagnostic");
+  DIAGNOSTIC("diagnostic");
 
-    private String commandKey;
+  private String commandKey;
 
-    CLightningCommand(String commandKey) {
-        this.commandKey = commandKey.toLowerCase(Locale.ROOT);
-    }
+  CLightningCommand(String commandKey) {
+    this.commandKey = commandKey.toLowerCase(Locale.ROOT);
+  }
 
-    @Override
-    public String getCommandKey() {
-        return commandKey;
-    }
+  @Override
+  public String getCommandKey() {
+    return commandKey;
+  }
 }

@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      #- name: Check Java Format
-      #  run: ./gradlew verifyGoogleJavaFormat
+      - name: Check Java Format
+        run: ./gradlew verifyGoogleJavaFormat
       - name: Build with Gradle
         run: ./gradlew compileJava

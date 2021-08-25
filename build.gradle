@@ -1,18 +1,8 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.9"
-    }
-}
-
 plugins {
     id 'java'
     id 'application'
     id('io.dinject.openapi') version('1.2')
+    id('com.github.sherter.google-java-format') version('0.9')
 }
 
 repositories {

@@ -11,25 +11,27 @@ import org.slf4j.LoggerFactory;
 
 public class AbstractServiceTest {
 
-    protected static final String BASE_URL = "http://localhost:7010";
-    protected static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceTest.class);
+  protected static final String BASE_URL = "http://localhost:7010";
+  protected static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceTest.class);
 
-    protected CLightningRestPlugin app = new CLightningRestPlugin();
-    protected CLightningRPC rpc = CLightningRPC.getInstance();
+  protected CLightningRestPlugin app = new CLightningRestPlugin();
+  protected CLightningRPC rpc = CLightningRPC.getInstance();
 
-    public AbstractServiceTest() {
-        Unirest.config().defaultBaseUrl(BASE_URL);
-    }
+  public AbstractServiceTest() {
+    Unirest.config().defaultBaseUrl(BASE_URL);
+  }
 
-    @Before
-    public void init() {
-        app.testModeOne();
-        rpc.listInvoices().getListInvoice().forEach(it -> rpc.delInvoice(it.getLabel(), it.getStatus()));
-    }
+  @Before
+  public void init() {
+    app.testModeOne();
+    rpc.listInvoices()
+        .getListInvoice()
+        .forEach(it -> rpc.delInvoice(it.getLabel(), it.getStatus()));
+  }
 
-    @After
-    public void tearDown() throws InterruptedException {
-        app.testModeOff();
-        Thread.sleep(1000);
-    }
+  @After
+  public void tearDown() throws InterruptedException {
+    app.testModeOff();
+    Thread.sleep(1000);
+  }
 }
