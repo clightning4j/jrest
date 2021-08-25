@@ -8,3 +8,10 @@ jobs:
       - name: Integration testing
         run: |
           docker-compose up --exit-code-from jrest --quiet-pull
+      - name: Upload lightning log
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          path: |
+            build/reports/tests/test/
+          name: jrest-${{ github.run_number }}
