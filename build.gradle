@@ -10,9 +10,13 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
+    /*flatDir {
+        dirs '/home/vincent/Github/JRPClightning/build/libs'
+    }*/
 }
 
 dependencies {
+    //implementation name: 'jrpclightning-0.2.1-SNAPSHOT-with-dependencies'
     implementation 'io.github.clightning4j:jrpclightning:0.2.1-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.8'
 

@@ -24,7 +24,12 @@ public class UtilityServices {
             content = {@OpenApiContent(from = CLightningGetInfo.class)})
       })
   public static void getInfo(Context context) {
-    context.json(CLightningRPC.getInstance().getInfo());
+    try {
+      var result = CLightningRPC.getInstance().getInfo();
+      UtilsService.makeSuccessResponse(context, result);
+    } catch (CLightningException | CommandException exception) {
+      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
+    }
   }
 
   @OpenApi(

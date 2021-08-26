@@ -46,5 +46,5 @@
   <logger name="j.service.socket.UnixDomainSocketRpc" level="ERROR"/>
   <logger name="jrpc.clightning.plugins" level="INFO"/>
   <logger name="jrpc.clightning" level="INFO"/>
-  <logger name="jrpc.service.socket" level="INFO"/>
+  <logger name="jrpc.service.socket" level="DEBUG"/>
 </configuration>

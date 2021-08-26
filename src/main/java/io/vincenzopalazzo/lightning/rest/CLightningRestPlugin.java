@@ -57,13 +57,38 @@ public class CLightningRestPlugin extends CLightningPlugin {
           new TimerTask() {
             @Override
             public void run() {
-              serverInstance = ServerUtils.buildServerInstance(plugin);
-              serverInstance.start(port);
-              onStartupCalled = true;
+              int retryMax = 4;
+              int retryTime = 0;
+              while (retryTime < retryMax && !onStartupCalled) {
+                try {
+                  serverInstance = ServerUtils.buildServerInstance(plugin);
+                  serverInstance.start(port);
+                  onStartupCalled = true;
+                } catch (Exception exception) {
+                  plugin.log(
+                      PluginLog.ERROR,
+                      String.format(
+                          "Error during the init phase of jrest, retry time %d over %d",
+                          retryTime, retryMax));
+                  try {
+                    Thread.sleep(3000);
+                  } catch (InterruptedException e) {
+                    plugin.log(
+                        PluginLog.ERROR,
+                        String.format(
+                            "Java thread exception with message: %s",
+                            exception.getLocalizedMessage()));
+                  }
+                  retryTime++;
+                }
+              }
+              plugin.log(PluginLog.INFO, "jrest: init completed");
               timer.cancel();
             }
           },
           2000);
+      plugin.log(
+          PluginLog.INFO, "Auto init jrest init function calla after a delay of 2000 millisecond");
     }
   }
 
