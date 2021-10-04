@@ -35,8 +35,8 @@ public class PluginServices {
       })
   public static void diagnostic(Context context, ICLightningPlugin plugin) {
     try {
-      Integer metricId = context.queryParam("metric_id", Integer.class).getOrNull();
-      String metricsId = context.queryParam("metrics_id", String.class).getOrNull();
+      Integer metricId = context.queryParamAsClass("metric_id", Integer.class).getOrDefault(null);
+      String metricsId = context.queryParamAsClass("metrics_id", String.class).getOrDefault(null);
       HashMap<String, Object> payload = new HashMap<>();
       if ((metricsId != null && !metricsId.isEmpty()) && metricId != null)
         UtilsService.makeErrorResponse(context, "Specified metric_id or metrics_id not both");

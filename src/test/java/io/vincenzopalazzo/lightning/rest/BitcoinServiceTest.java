@@ -21,7 +21,6 @@ public class BitcoinServiceTest extends AbstractServiceTest {
       var address = CLightningRPC.getInstance().newAddress(AddressType.P2SH_SEGWIT);
       HttpResponse response = Unirest.get("/bitcoin/newaddr/p2sh-segwit").asString();
       var toTest = response.getBody().toString();
-      toTest = toTest.substring(1, toTest.length() - 1);
       LOGGER.debug("POST_invoice response: " + toTest);
       LOGGER.debug("POST_invoice address expected length: " + address);
       assertThat(response.getStatus()).isEqualTo(200);
@@ -38,7 +37,6 @@ public class BitcoinServiceTest extends AbstractServiceTest {
       var address = CLightningRPC.getInstance().newAddress(AddressType.BECH32);
       HttpResponse response = Unirest.get("/bitcoin/newaddr/bech32").asString();
       var toTest = response.getBody().toString();
-      toTest = toTest.substring(1, toTest.length() - 1);
       LOGGER.debug("POST_invoice response: " + toTest);
       LOGGER.debug("POST_invoice address expected length: " + address);
       assertThat(response.getStatus()).isEqualTo(200);

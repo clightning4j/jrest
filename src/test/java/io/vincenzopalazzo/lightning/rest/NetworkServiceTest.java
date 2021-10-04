@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
-import io.javalin.plugin.json.JavalinJson;
+import io.javalin.plugin.json.JavalinJackson;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import jrpc.clightning.CLightningRPC;
 import junit.framework.TestCase;
@@ -33,7 +33,7 @@ public class NetworkServiceTest extends AbstractServiceTest {
     assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
     try {
       var allNodes = CLightningRPC.getInstance().listNodes();
-      String asString = JavalinJson.toJson(allNodes);
+      String asString = new JavalinJackson().toJsonString(allNodes);
       HttpResponse response = Unirest.get("/network/listnodes").asString();
       LOGGER.debug("POST_invoice response: " + response.getBody().toString());
       assertThat(response.getStatus()).isEqualTo(200);

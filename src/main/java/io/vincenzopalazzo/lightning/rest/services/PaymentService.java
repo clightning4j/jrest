@@ -5,7 +5,6 @@ import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
-import java.util.Objects;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningDecodePay;
@@ -165,13 +164,20 @@ public class PaymentService {
             content = {@OpenApiContent(from = CLightningInvoice.class)})
       }) // TODO complete the documentation
   public static void invoice(Context context) {
-    String milliSatoshi = context.formParam("msat", String.class).check(i -> !i.isEmpty()).get();
-    String label = context.formParam("label", String.class).check(i -> !i.isEmpty()).get();
+    String milliSatoshi =
+        context
+            .formParamAsClass("msat", String.class)
+            .check(i -> !i.isEmpty(), "msat value is not empty")
+            .get();
+    String label =
+        context
+            .formParamAsClass("label", String.class)
+            .check(i -> !i.isEmpty(), "label value is not empty")
+            .get();
     String description =
         context
-            .formParam("description", String.class)
-            .check(Objects::nonNull)
-            .check(i -> !i.isEmpty())
+            .formParamAsClass("description", String.class)
+            .check(i -> !i.isEmpty(), "description is not empty")
             .get();
     String expiry = context.formParam("expiry");
     if (expiry == null || expiry.isEmpty()) {
