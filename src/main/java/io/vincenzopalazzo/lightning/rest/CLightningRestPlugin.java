@@ -114,7 +114,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
         case "start":
           {
             plugin.log(PluginLog.INFO, "Server on port: " + port);
-            if (!Objects.requireNonNull(serverInstance.server()).getStarted()) {
+            if (!Objects.requireNonNull(serverInstance.jettyServer()).started) {
               serverInstance.start(port);
               response.add("status", "running");
               response.add("port", serverInstance.port());
@@ -125,7 +125,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
           }
         case "stop":
           {
-            if (Objects.requireNonNull(serverInstance.server()).getStarted()) {
+            if (Objects.requireNonNull(serverInstance.jettyServer()).started) {
               serverInstance.stop();
               response.add("status", "shutdown");
               response.add("port", serverInstance.port());
