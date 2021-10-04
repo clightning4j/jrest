@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
-import io.javalin.plugin.json.JavalinJson;
+import io.javalin.plugin.json.JavalinJackson;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import jrpc.clightning.exceptions.CLightningException;
 import junit.framework.TestCase;
@@ -19,7 +19,7 @@ public class PaymentServiceTest extends AbstractServiceTest {
     // payment/listinvoice
     try {
       var listInvoices = rpc.listInvoices();
-      String jsonResult = JavalinJson.toJson(listInvoices);
+      String jsonResult = new JavalinJackson().toJsonString(listInvoices);
       HttpResponse response = Unirest.get("/payment/listinvoice").asString();
       LOGGER.debug("GET_listInvoice response: " + response.getBody().toString());
       assertThat(response.getStatus()).isEqualTo(200);
@@ -38,7 +38,7 @@ public class PaymentServiceTest extends AbstractServiceTest {
       TestCase.assertFalse(listInvoice.isEmpty());
       invoice = listInvoice.get(0);
       TestCase.assertNotNull(invoice.getBolt11());
-      String jsonResult = JavalinJson.toJson(invoice);
+      String jsonResult = new JavalinJackson().toJsonString(invoice);
       HttpResponse response =
           Unirest.post("/payment/listinvoice").field("label", invoice.getLabel()).asString();
       LOGGER.debug("GET_listInvoice response: " + response.getBody().toString());
@@ -55,7 +55,7 @@ public class PaymentServiceTest extends AbstractServiceTest {
     try {
       var invoice = this.rpc.invoice("1000", "test", "test");
       var expected = rpc.decodePay(invoice.getBolt11());
-      String jsonResult = JavalinJson.toJson(expected);
+      String jsonResult = new JavalinJackson().toJsonString(expected);
 
       HttpResponse response =
           Unirest.post("/payment/decodepay").field("bolt11", invoice.getBolt11()).asString();
@@ -74,7 +74,7 @@ public class PaymentServiceTest extends AbstractServiceTest {
       var num = Math.random();
       var invoice = rpc.invoice("1000", "test-invoice-" + num, "test");
       invoice = rpc.listInvoices("test-invoice-" + num).getListInvoice().get(0);
-      String jsonResult = JavalinJson.toJson(invoice);
+      String jsonResult = new JavalinJackson().toJsonString(invoice);
       TestCase.assertNotNull(invoice.getStatus());
       TestCase.assertNotNull(invoice.getLabel());
 
