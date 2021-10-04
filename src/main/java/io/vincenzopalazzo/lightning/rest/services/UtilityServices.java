@@ -52,7 +52,7 @@ public class UtilityServices {
             content = {@OpenApiContent(from = CLightningListFunds.class)})
       })
   public static void listFunds(Context context) {
-    Boolean spent = context.formParam("spent", Boolean.class).getOrNull();
+    Boolean spent = context.formParamAsClass("spent", Boolean.class).getOrDefault(null);
     if (spent == null) spent = false;
     try {
       // TODO add method in the list funds
