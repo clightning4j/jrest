@@ -66,7 +66,7 @@ public class ServerUtils {
     url = String.format("%s/%s", PAYMENT_SECTION, Command.DECODEPAY.getCommandKey());
     serverInstance.post(url, PaymentService::decodePay);
 
-    url = String.format("%s/%s/:label", PAYMENT_SECTION, Command.DELINVOICE.getCommandKey());
+    url = String.format("%s/%s/{label}", PAYMENT_SECTION, Command.DELINVOICE.getCommandKey());
     serverInstance.delete(url, PaymentService::delInvoice);
 
     url = String.format("%s/%s", PAYMENT_SECTION, Command.INVOICE.getCommandKey());
@@ -74,7 +74,7 @@ public class ServerUtils {
   }
 
   private static void setBitcoinServices(Javalin serverInstance) {
-    String url = String.format("%s/%s/:type", BITCOIN_SECTION, Command.NEWADDR.getCommandKey());
+    String url = String.format("%s/%s/{type}", BITCOIN_SECTION, Command.NEWADDR.getCommandKey());
     serverInstance.get(url, BitcoinServices::newAddr);
 
     url = String.format("%s/%s", BITCOIN_SECTION, Command.WITHDRAW.getCommandKey());
@@ -90,7 +90,7 @@ public class ServerUtils {
   }
 
   private static void setNetworkServices(Javalin servicesInstance) {
-    String url = String.format("%s/%s/:nodeId", NETWORK_SECTION, Command.PING.getCommandKey());
+    String url = String.format("%s/%s/{nodeId}", NETWORK_SECTION, Command.PING.getCommandKey());
     servicesInstance.get(url, NetworkServices::ping);
 
     url = String.format("%s/%s", NETWORK_SECTION, Command.LISTNODES.getCommandKey());
