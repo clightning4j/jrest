@@ -2,9 +2,8 @@ package io.vincenzopalazzo.lightning.rest.services;
 
 import io.javalin.http.Context;
 import io.javalin.plugin.openapi.annotations.*;
+import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
 import jrpc.clightning.CLightningRPC;
-import jrpc.clightning.exceptions.CLightningException;
-import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningGetInfo;
 import jrpc.clightning.model.CLightningListFunds;
 
@@ -24,12 +23,8 @@ public class UtilityServices {
             content = {@OpenApiContent(from = CLightningGetInfo.class)})
       })
   public static void getInfo(Context context) {
-    try {
-      var result = CLightningRPC.getInstance().getInfo();
-      UtilsService.makeSuccessResponse(context, result);
-    } catch (CLightningException | CommandException exception) {
-      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
-    }
+    var result = CLightningRPC.getInstance().getInfo();
+    UtilsService.makeSuccessResponse(context, result);
   }
 
   @OpenApi(
@@ -52,14 +47,9 @@ public class UtilityServices {
             content = {@OpenApiContent(from = CLightningListFunds.class)})
       })
   public static void listFunds(Context context) {
-    Boolean spent = context.formParamAsClass("spent", Boolean.class).getOrDefault(null);
-    if (spent == null) spent = false;
-    try {
-      // TODO add method in the list funds
-      var result = CLightningRPC.getInstance().listFunds();
-      UtilsService.makeSuccessResponse(context, result);
-    } catch (CLightningException | CommandException exception) {
-      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
-    }
+    Boolean spent = context.formParamAsClass("spent", Boolean.class).getOrDefault(false);
+    // TODO add method in the list funds
+    var result = CLightningRPC.getInstance().listFunds();
+    UtilsService.makeSuccessResponse(context, result);
   }
 }

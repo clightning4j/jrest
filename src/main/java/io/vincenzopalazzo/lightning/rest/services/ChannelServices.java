@@ -2,14 +2,19 @@ package io.vincenzopalazzo.lightning.rest.services;
 
 import io.javalin.http.Context;
 import io.javalin.plugin.openapi.annotations.*;
+import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import jrpc.clightning.CLightningRPC;
-import jrpc.clightning.exceptions.CLightningException;
-import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningListChannels;
 
 public class ChannelServices {
 
   private static final String SERVICE = "Channel Services";
+
+  static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   @OpenApi(
       path =
@@ -24,11 +29,16 @@ public class ChannelServices {
             content = {@OpenApiContent(from = CLightningListChannels.class)})
       })
   public static void listChannels(Context ctx) {
-    try {
-      CLightningListChannels listChannels = CLightningRPC.getInstance().listChannels();
-      UtilsService.makeSuccessResponse(ctx, listChannels);
-    } catch (CLightningException | CommandException ex) {
-      UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage());
-    }
+    ctx.future(
+        getChannels(ctx), listChannels -> UtilsService.makeSuccessResponse(ctx, listChannels));
+  }
+
+  public static CompletableFuture<CLightningListChannels> getChannels(Context ctx) {
+    var future = new CompletableFuture<CLightningListChannels>();
+    executor.schedule(
+        () -> future.complete(CLightningRPC.getInstance().listChannels()),
+        1,
+        TimeUnit.MILLISECONDS);
+    return future;
   }
 }

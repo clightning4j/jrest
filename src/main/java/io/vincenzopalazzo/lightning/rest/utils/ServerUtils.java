@@ -11,9 +11,12 @@ import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
 import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningRPCManager;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
+import jrpc.clightning.exceptions.CLightningException;
+import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningHelp;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
+import jrpc.exceptions.ServiceException;
 import jrpc.wrapper.response.ErrorResponse;
 
 public class ServerUtils {
@@ -24,6 +27,7 @@ public class ServerUtils {
   private static final String NETWORK_SECTION = "/network";
   private static final String CHANNEL_SECTION = "/channel";
   private static final String PLUGIN_SECTION = "/plugin";
+  private static final String RAW_SECTION = "/raw";
 
   public static Javalin buildServerInstance(ICLightningPlugin plugin) {
     Info info = new Info().version("0.1").description("C-lightning REST API");
@@ -47,6 +51,8 @@ public class ServerUtils {
               config.enableCorsForAllOrigins();
               config.registerPlugin(new OpenApiPlugin(options));
               config.defaultContentType = "application/json";
+              config.asyncRequestTimeout = 1_000_000L;
+              config.showJavalinBanner = false;
             });
 
     setBitcoinServices(serverInstance);
@@ -54,7 +60,9 @@ public class ServerUtils {
     setPaymentServices(serverInstance);
     setNetworkServices(serverInstance);
     setChannelServices(serverInstance);
+    setRawCallServices(serverInstance);
     setPluginServices(serverInstance, plugin);
+    setExceptionAnswer(serverInstance);
     return serverInstance;
   }
 
@@ -105,6 +113,11 @@ public class ServerUtils {
     serverInstance.get(url, ChannelServices::listChannels);
   }
 
+  private static void setRawCallServices(Javalin serverInstance) {
+    String url = String.format("%s/%s", RAW_SECTION, Command.LISTCHANNELS.getCommandKey());
+    serverInstance.get(url, RawCallServices::rawListChannels);
+  }
+
   private static void setPluginServices(Javalin serverInstance, ICLightningPlugin plugin) {
     CLightningHelp help = CLightningRPC.getInstance().help();
     help.getHelpItems().parallelStream()
@@ -118,5 +131,20 @@ public class ServerUtils {
                 serverInstance.get(url, ctx -> PluginServices.diagnostic(ctx, plugin));
               }
             });
+  }
+
+  private static void setExceptionAnswer(Javalin serverInstance) {
+    serverInstance.exception(
+        CLightningException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        ServiceException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        CommandException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        Exception.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
   }
 }
