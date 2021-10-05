@@ -57,7 +57,7 @@ public class BitcoinServiceTest extends AbstractServiceTest {
               .field("satoshi", "10000000")
               .asString();
       LOGGER.debug("POST_invoice response: " + response.getBody().toString());
-      assertThat(response.getStatus()).isEqualTo(500);
+      assertThat(response.getStatus()).isEqualTo(301);
       TestCase.assertTrue(response.getBody().toString().contains("Could not afford"));
 
     } catch (Exception exception) {

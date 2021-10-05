@@ -5,6 +5,7 @@ import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
+import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningDecodePay;
@@ -60,18 +61,14 @@ public class PaymentService {
             content = {@OpenApiContent(from = ErrorMessage.class)}),
       })
   public static void listInvoiceFiltered(Context context) {
-    try {
-      String bolt11 = context.formParam("label");
-      CLightningListInvoices invoices = CLightningRPC.getInstance().listInvoices(bolt11);
-      if (invoices.getListInvoice().isEmpty()) {
-        context.status(404);
-        context.json(new ErrorMessage(404, "Invoice not found"));
-        return;
-      }
-      UtilsService.makeSuccessResponse(context, invoices.getListInvoice().get(0));
-    } catch (CLightningException exception) {
-      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
+    String bolt11 = context.formParam("label");
+    CLightningListInvoices invoices = CLightningRPC.getInstance().listInvoices(bolt11);
+    if (invoices.getListInvoice().isEmpty()) {
+      context.status(404);
+      context.json(new ErrorMessage(404, "Invoice not found"));
+      return;
     }
+    UtilsService.makeSuccessResponse(context, invoices.getListInvoice().get(0));
   }
 
   @OpenApi(
@@ -92,16 +89,11 @@ public class PaymentService {
       })
   public static void decodePay(Context context) {
     String bolt11 = context.formParam("bolt11");
-    if (bolt11.isEmpty()) {
-      UtilsService.makeErrorResponse(context, "bolt11 not valid");
-      return;
+    if (bolt11 != null && bolt11.isEmpty()) {
+      throw new InternalServerErrorResponse("bolt11 not valid");
     }
-    try {
-      CLightningDecodePay decodePay = CLightningRPC.getInstance().decodePay(bolt11);
-      UtilsService.makeSuccessResponse(context, decodePay);
-    } catch (CLightningException ex) {
-      UtilsService.makeErrorResponse(context, ex.getLocalizedMessage());
-    }
+    CLightningDecodePay decodePay = CLightningRPC.getInstance().decodePay(bolt11);
+    UtilsService.makeSuccessResponse(context, decodePay);
   }
 
   @OpenApi(
@@ -128,17 +120,13 @@ public class PaymentService {
   public static void delInvoice(Context context) {
     String label = context.pathParam("label");
 
-    try {
-      CLightningListInvoices listInvoices = CLightningRPC.getInstance().listInvoices(label);
-      if (listInvoices.getListInvoice().isEmpty()) {
-        throw new NotFoundResponse("Invoice not found");
-      }
-      String status = listInvoices.getListInvoice().get(0).getStatus();
-      CLightningInvoice invoice = CLightningRPC.getInstance().delInvoice(label, status);
-      UtilsService.makeSuccessResponse(context, invoice);
-    } catch (CLightningException ex) {
-      throw new InternalServerErrorResponse(ex.getLocalizedMessage());
+    CLightningListInvoices listInvoices = CLightningRPC.getInstance().listInvoices(label);
+    if (listInvoices.getListInvoice().isEmpty()) {
+      throw new NotFoundResponse("Invoice not found");
     }
+    String status = listInvoices.getListInvoice().get(0).getStatus();
+    CLightningInvoice invoice = CLightningRPC.getInstance().delInvoice(label, status);
+    UtilsService.makeSuccessResponse(context, invoice);
   }
 
   @OpenApi(
@@ -195,20 +183,16 @@ public class PaymentService {
     // TODO: support fallbacks
     // String[] fallbacks = context.queryParam("fallbacks", List<String>.class).get();
 
-    try {
-      CLightningInvoice invoice =
-          CLightningRPC.getInstance()
-              .invoice(
-                  milliSatoshi,
-                  label,
-                  description,
-                  expiry,
-                  new String[] {},
-                  preImage,
-                  exposePrivateChannels);
-      UtilsService.makeSuccessResponse(context, invoice);
-    } catch (CLightningException ex) {
-      UtilsService.makeErrorResponse(context, ex.getLocalizedMessage());
-    }
+    CLightningInvoice invoice =
+        CLightningRPC.getInstance()
+            .invoice(
+                milliSatoshi,
+                label,
+                description,
+                expiry,
+                new String[] {},
+                preImage,
+                exposePrivateChannels);
+    UtilsService.makeSuccessResponse(context, invoice);
   }
 }

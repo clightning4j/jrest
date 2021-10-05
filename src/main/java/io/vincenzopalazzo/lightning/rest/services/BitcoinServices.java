@@ -2,9 +2,8 @@ package io.vincenzopalazzo.lightning.rest.services;
 
 import io.javalin.http.Context;
 import io.javalin.plugin.openapi.annotations.*;
+import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
 import jrpc.clightning.CLightningRPC;
-import jrpc.clightning.exceptions.CLightningException;
-import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningBitcoinTx;
 import jrpc.clightning.model.types.AddressType;
 
@@ -34,12 +33,8 @@ public class BitcoinServices {
     } else if (addressType.equals("bech32")) {
       type = AddressType.BECH32;
     }
-    try {
-      String result = CLightningRPC.getInstance().newAddress(type);
-      UtilsService.makeSuccessResponse(ctx, result);
-    } catch (CLightningException | CommandException exception) {
-      UtilsService.makeErrorResponse(ctx, exception.getLocalizedMessage());
-    }
+    String result = CLightningRPC.getInstance().newAddress(type);
+    UtilsService.makeSuccessResponse(ctx, result);
   }
 
   @OpenApi(
@@ -60,11 +55,7 @@ public class BitcoinServices {
   public static void withdraw(Context ctx) {
     String destination = ctx.formParam("destination");
     String satoshi = ctx.formParam("satoshi");
-    try {
-      CLightningBitcoinTx bitcoinTx = CLightningRPC.getInstance().withdraw(destination, satoshi);
-      UtilsService.makeSuccessResponse(ctx, bitcoinTx);
-    } catch (CLightningException | CommandException commandException) {
-      UtilsService.makeErrorResponse(ctx, commandException.getLocalizedMessage());
-    }
+    CLightningBitcoinTx bitcoinTx = CLightningRPC.getInstance().withdraw(destination, satoshi);
+    UtilsService.makeSuccessResponse(ctx, bitcoinTx);
   }
 }

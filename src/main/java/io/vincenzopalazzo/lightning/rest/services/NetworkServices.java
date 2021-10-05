@@ -4,13 +4,20 @@ import io.javalin.http.Context;
 import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.ErrorMessage;
+import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import jrpc.clightning.CLightningRPC;
-import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningListNodes;
 import jrpc.clightning.model.types.CLightningNode;
 import jrpc.clightning.model.types.CLightningPing;
 
 public class NetworkServices {
+
+  private static final ScheduledExecutorService executor =
+      Executors.newSingleThreadScheduledExecutor();
 
   private static final String SERVICE = "Network";
 
@@ -31,14 +38,13 @@ public class NetworkServices {
             status = "500",
             content = {@OpenApiContent(from = ErrorMessage.class)})
       })
-  public static void ping(Context context) {
-    String nodeId = context.pathParam("nodeId");
-    try {
-      CLightningPing ping = CLightningRPC.getInstance().ping(nodeId);
-      UtilsService.makeSuccessResponse(context, ping);
-    } catch (CLightningException exception) {
-      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
-    }
+  public static void ping(Context ctx) {
+    String nodeId = ctx.pathParam("nodeId");
+    ctx.future(
+        pingNode(nodeId),
+        result -> {
+          if (result != null) UtilsService.makeSuccessResponse(ctx, result);
+        });
   }
 
   @OpenApi(
@@ -56,12 +62,11 @@ public class NetworkServices {
             content = {@OpenApiContent(from = InternalServerErrorResponse.class)})
       })
   public static void listNodes(Context ctx) {
-    try {
-      CLightningListNodes nodes = CLightningRPC.getInstance().listNodes();
-      UtilsService.makeSuccessResponse(ctx, nodes);
-    } catch (CLightningException ex) {
-      throw new InternalServerErrorResponse(ex.getLocalizedMessage());
-    }
+    ctx.future(
+        getListNodes(null),
+        result -> {
+          if (result != null) UtilsService.makeSuccessResponse(ctx, result);
+        });
   }
 
   @OpenApi(
@@ -82,12 +87,32 @@ public class NetworkServices {
             content = {@OpenApiContent(from = InternalServerErrorResponse.class)})
       }) // TODO move it in the GET request
   public static void listNodesWithId(Context ctx) {
-    try {
-      String nodeId = ctx.formParam("nodeId");
-      CLightningListNodes nodes = CLightningRPC.getInstance().listNodes(nodeId);
-      UtilsService.makeSuccessResponse(ctx, nodes);
-    } catch (CLightningException ex) {
-      throw new InternalServerErrorResponse(ex.getLocalizedMessage());
-    }
+    String nodeId = ctx.formParam("nodeId");
+    ctx.future(
+        getListNodes(nodeId),
+        result -> {
+          if (result != null) UtilsService.makeSuccessResponse(ctx, result);
+        });
+  }
+
+  public static CompletableFuture<CLightningListNodes> getListNodes(String nodeId) {
+    var future = new CompletableFuture<CLightningListNodes>();
+    executor.schedule(
+        () -> {
+          CLightningListNodes listNodes;
+          if (nodeId != null) listNodes = CLightningRPC.getInstance().listNodes(nodeId);
+          else listNodes = CLightningRPC.getInstance().listNodes();
+          future.complete(listNodes);
+        },
+        1,
+        TimeUnit.MILLISECONDS);
+    return future;
+  }
+
+  public static CompletableFuture<CLightningPing> pingNode(String nodeId) {
+    var future = new CompletableFuture<CLightningPing>();
+    executor.schedule(
+        () -> future.complete(CLightningRPC.getInstance().ping(nodeId)), 1, TimeUnit.MILLISECONDS);
+    return future;
   }
 }

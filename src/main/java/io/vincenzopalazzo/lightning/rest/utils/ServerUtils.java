@@ -11,9 +11,12 @@ import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
 import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningRPCManager;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.commands.Command;
+import jrpc.clightning.exceptions.CLightningException;
+import jrpc.clightning.exceptions.CommandException;
 import jrpc.clightning.model.CLightningHelp;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
+import jrpc.exceptions.ServiceException;
 import jrpc.wrapper.response.ErrorResponse;
 
 public class ServerUtils {
@@ -47,6 +50,8 @@ public class ServerUtils {
               config.enableCorsForAllOrigins();
               config.registerPlugin(new OpenApiPlugin(options));
               config.defaultContentType = "application/json";
+              config.asyncRequestTimeout = 10_000L;
+              config.showJavalinBanner = false;
             });
 
     setBitcoinServices(serverInstance);
@@ -55,6 +60,7 @@ public class ServerUtils {
     setNetworkServices(serverInstance);
     setChannelServices(serverInstance);
     setPluginServices(serverInstance, plugin);
+    setExceptionAnswer(serverInstance);
     return serverInstance;
   }
 
@@ -118,5 +124,20 @@ public class ServerUtils {
                 serverInstance.get(url, ctx -> PluginServices.diagnostic(ctx, plugin));
               }
             });
+  }
+
+  private static void setExceptionAnswer(Javalin serverInstance) {
+    serverInstance.exception(
+        CLightningException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        ServiceException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        CommandException.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
+    serverInstance.exception(
+        Exception.class,
+        (ex, ctx) -> UtilsService.makeErrorResponse(ctx, ex.getLocalizedMessage()));
   }
 }
