@@ -51,7 +51,7 @@ public class ServerUtils {
               config.enableCorsForAllOrigins();
               config.registerPlugin(new OpenApiPlugin(options));
               config.defaultContentType = "application/json";
-              config.asyncRequestTimeout = 10_000L;
+              config.asyncRequestTimeout = 1_000_000L;
               config.showJavalinBanner = false;
             });
 
