@@ -24,7 +24,13 @@ public class UtilsService {
   public static <T> void makeSuccessResponse(Context context, T response) {
     // context.json(new SuccessMessage<T>(response));
     context.status(200);
-    context.json(response);
+    context.jsonStream(response);
+  }
+
+  public static void makeSuccessRawResponse(Context context, String response) {
+    // context.json(new SuccessMessage<T>(response));
+    context.jsonStream(200);
+    context.result(response);
   }
 
   static <T> void makeSuccessResponse(Context context, ICLightningPlugin plugin, T response) {
@@ -32,7 +38,7 @@ public class UtilsService {
     plugin.log(
         PluginLog.DEBUG,
         String.format("Request to URI %s performed with success", context.fullUrl()));
-    context.json(response);
+    context.jsonStream(response);
     context.status(200);
   }
 }

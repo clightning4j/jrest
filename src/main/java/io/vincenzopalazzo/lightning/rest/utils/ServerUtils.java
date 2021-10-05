@@ -27,6 +27,7 @@ public class ServerUtils {
   private static final String NETWORK_SECTION = "/network";
   private static final String CHANNEL_SECTION = "/channel";
   private static final String PLUGIN_SECTION = "/plugin";
+  private static final String RAW_SECTION = "/raw";
 
   public static Javalin buildServerInstance(ICLightningPlugin plugin) {
     Info info = new Info().version("0.1").description("C-lightning REST API");
@@ -59,6 +60,7 @@ public class ServerUtils {
     setPaymentServices(serverInstance);
     setNetworkServices(serverInstance);
     setChannelServices(serverInstance);
+    setRawCallServices(serverInstance);
     setPluginServices(serverInstance, plugin);
     setExceptionAnswer(serverInstance);
     return serverInstance;
@@ -109,6 +111,11 @@ public class ServerUtils {
   private static void setChannelServices(Javalin serverInstance) {
     String url = String.format("%s/%s", CHANNEL_SECTION, Command.LISTCHANNELS.getCommandKey());
     serverInstance.get(url, ChannelServices::listChannels);
+  }
+
+  private static void setRawCallServices(Javalin serverInstance) {
+    String url = String.format("%s/%s", RAW_SECTION, Command.LISTCHANNELS.getCommandKey());
+    serverInstance.get(url, RawCallServices::rawListChannels);
   }
 
   private static void setPluginServices(Javalin serverInstance, ICLightningPlugin plugin) {

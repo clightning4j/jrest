@@ -38,13 +38,14 @@ public class NetworkServices {
             status = "500",
             content = {@OpenApiContent(from = ErrorMessage.class)})
       })
-  public static void ping(Context ctx) {
-    String nodeId = ctx.pathParam("nodeId");
-    ctx.future(
-        pingNode(nodeId),
-        result -> {
-          if (result != null) UtilsService.makeSuccessResponse(ctx, result);
-        });
+  public static void ping(Context context) {
+    String nodeId = context.pathParam("nodeId");
+    try {
+      CLightningPing ping = CLightningRPC.getInstance().ping(nodeId);
+      UtilsService.makeSuccessResponse(context, ping);
+    } catch (Exception exception) {
+      UtilsService.makeErrorResponse(context, exception.getLocalizedMessage());
+    }
   }
 
   @OpenApi(
@@ -106,13 +107,6 @@ public class NetworkServices {
         },
         1,
         TimeUnit.MILLISECONDS);
-    return future;
-  }
-
-  public static CompletableFuture<CLightningPing> pingNode(String nodeId) {
-    var future = new CompletableFuture<CLightningPing>();
-    executor.schedule(
-        () -> future.complete(CLightningRPC.getInstance().ping(nodeId)), 1, TimeUnit.MILLISECONDS);
     return future;
   }
 }
