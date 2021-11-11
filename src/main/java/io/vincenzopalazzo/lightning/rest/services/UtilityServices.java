@@ -1,10 +1,12 @@
 package io.vincenzopalazzo.lightning.rest.services;
 
+import com.google.gson.reflect.TypeToken;
 import io.javalin.http.Context;
 import io.javalin.plugin.openapi.annotations.*;
 import io.vincenzopalazzo.lightning.rest.model.rpc.type.CLightningVerifyMessage;
 import io.vincenzopalazzo.lightning.rest.utils.UtilsService;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -86,11 +88,20 @@ public class UtilityServices {
       })
   public static void checkMessage(Context context, ICLightningPlugin plugin) {
     HashMap<String, Object> payload = new HashMap<>();
-    payload.put("message", context.formParamAsClass("message", String.class));
-    payload.put("zbase", context.formParamAsClass("zbase", String.class));
-    if (context.formParamMap().containsKey("pubkey"))
-      payload.put("message", context.formParamAsClass("pubkey", String.class));
-    payload.put("message", context.formParamAsClass("message", String.class));
+    payload.put(
+        "message",
+        context
+            .formParamAsClass("message", String.class)
+            .check(i -> !i.isEmpty(), "message value is not empty")
+            .get());
+    payload.put(
+        "zbase",
+        context
+            .formParamAsClass("zbase", String.class)
+            .check(i -> !i.isEmpty(), "zbase value is not empty")
+            .get());
+    if (context.formParamAsClass("message", String.class).hasValue())
+      payload.put("message", context.formParamAsClass("pubkey", String.class).get());
     context.future(
         verifyMessage(context, plugin, payload),
         result -> {
@@ -112,11 +123,11 @@ public class UtilityServices {
             plugin.log(PluginLog.ERROR, e.getLocalizedMessage());
             future.completeExceptionally(e);
           }
-          RPCResponseWrapper<CLightningVerifyMessage> verifyMessage;
+          Type type = new TypeToken<RPCResponseWrapper<CLightningVerifyMessage>>() {}.getType();
           JsonConverter converter = new JsonConverter();
-          verifyMessage =
+          RPCResponseWrapper<CLightningVerifyMessage> verifyMessage =
               (RPCResponseWrapper<CLightningVerifyMessage>)
-                  converter.deserialization(response, converter.getClass());
+                  converter.deserialization(response, type);
           if (verifyMessage.getError() == null) future.complete(verifyMessage.getResult());
           else
             future.completeExceptionally(

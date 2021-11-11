@@ -2,11 +2,13 @@ package io.vincenzopalazzo.lightning.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.gson.reflect.TypeToken;
 import io.javalin.plugin.json.JavalinJackson;
 import io.vincenzopalazzo.lightning.rest.model.rpc.type.CLightningVerifyMessage;
 import io.vincenzopalazzo.lightning.rest.model.rpc.type.ClightningSignMessage;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.wrapper.response.RPCResponseWrapper;
@@ -54,10 +56,9 @@ public class UtilsServiceTest extends AbstractServiceTest {
       payload.put("message", "Hello from jrest");
       var signRaw = rpc.rawCommand("signmessage", payload);
       LOGGER.debug("POST_verifyMessage mock signmessage: " + signRaw);
-      RPCResponseWrapper<ClightningSignMessage> rawResponse = new RPCResponseWrapper<>();
-      rawResponse =
-          (RPCResponseWrapper<ClightningSignMessage>)
-              converter.deserialization(signRaw, rawResponse.getClass());
+      Type type = new TypeToken<RPCResponseWrapper<ClightningSignMessage>>() {}.getType();
+      RPCResponseWrapper<ClightningSignMessage> rawResponse =
+          (RPCResponseWrapper<ClightningSignMessage>) converter.deserialization(signRaw, type);
       assertThat(rawResponse.getError()).isNull();
       ClightningSignMessage signMessage = rawResponse.getResult();
       var response =
