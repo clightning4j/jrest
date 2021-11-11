@@ -9,7 +9,6 @@ import io.vincenzopalazzo.lightning.rest.utils.rpc.CLightningCommand;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.model.CLightningGetInfo;
 import jrpc.service.converters.JsonConverter;
@@ -25,7 +24,7 @@ public class PluginServiceTest extends AbstractServiceTest {
   public void init() {
     super.init();
     enable = new AtomicBoolean(false);
-    var help = CLightningRPC.getInstance().help();
+    var help = rpc.help();
     help.getHelpItems().parallelStream()
         .forEach(
             it -> {
@@ -48,7 +47,7 @@ public class PluginServiceTest extends AbstractServiceTest {
       HashMap<String, Object> params = new HashMap<>();
       params.put("metrics_id", "1");
       CLightningDiagnostic expectedDiagnostic =
-          CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
+          rpc.runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
       var expectedString = converter.serialization(expectedDiagnostic);
       // The number in JSON are floating point, we need to make a cast to make sure that it is a
       // correct
@@ -79,7 +78,7 @@ public class PluginServiceTest extends AbstractServiceTest {
       CLightningMetricOne metricOne =
           diagnostic.getMetricWithImplementation("metric_one", CLightningMetricOne.class);
       TestCase.assertNotNull(metricOne);
-      CLightningGetInfo getInfo = CLightningRPC.getInstance().getInfo();
+      CLightningGetInfo getInfo = rpc.getInfo();
       TestCase.assertEquals(getInfo.getId(), metricOne.getNodeId());
     } catch (CLightningException exception) {
       TestCase.fail(exception.getLocalizedMessage());

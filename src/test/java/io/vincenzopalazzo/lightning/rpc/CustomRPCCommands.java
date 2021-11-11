@@ -17,11 +17,16 @@ import org.junit.Test;
 public class CustomRPCCommands {
 
   private AtomicBoolean enable;
+  private CLightningRPC rpc;
+
+  public CustomRPCCommands() {
+    rpc = new CLightningRPC();
+  }
 
   @Before
   public void init() {
     enable = new AtomicBoolean(false);
-    var help = CLightningRPC.getInstance().help();
+    var help = rpc.help();
     help.getHelpItems().parallelStream()
         .forEach(
             it -> {
@@ -29,8 +34,7 @@ public class CustomRPCCommands {
                 enable.set(true);
               }
             });
-    CLightningRPC.getInstance()
-        .registerCommand(CLightningCommand.DIAGNOSTIC, new CLightningDiagnosticRPC());
+    rpc.registerCommand(CLightningCommand.DIAGNOSTIC, new CLightningDiagnosticRPC());
   }
 
   @Test
@@ -38,8 +42,7 @@ public class CustomRPCCommands {
     assumeThat(enable.get(), is(true));
     HashMap<String, Object> params = new HashMap<>();
     params.put("metrics_id", "1");
-    CLightningDiagnostic diagnostic =
-        CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
+    CLightningDiagnostic diagnostic = rpc.runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
     TestCase.assertTrue(diagnostic.allMetrics());
   }
 
@@ -48,10 +51,9 @@ public class CustomRPCCommands {
     assumeThat(enable.get(), is(true));
     HashMap<String, Object> params = new HashMap<>();
     params.put("metrics_id", "1");
-    CLightningDiagnostic diagnostic =
-        CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
+    CLightningDiagnostic diagnostic = rpc.runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
     TestCase.assertTrue(diagnostic.allMetrics());
-    var getInfo = CLightningRPC.getInstance().getInfo();
+    var getInfo = rpc.getInfo();
     CLightningMetricOne metricOne =
         diagnostic.getMetricWithImplementation("metric_one", CLightningMetricOne.class);
     TestCase.assertEquals(getInfo.getId(), metricOne.getNodeId());
@@ -62,10 +64,9 @@ public class CustomRPCCommands {
     assumeThat(enable.get(), is(true));
     HashMap<String, Object> params = new HashMap<>();
     params.put("metrics_id", "1,");
-    CLightningDiagnostic diagnostic =
-        CLightningRPC.getInstance().runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
+    CLightningDiagnostic diagnostic = rpc.runRegisterCommand(CLightningCommand.DIAGNOSTIC, params);
     TestCase.assertTrue(diagnostic.allMetrics());
-    var getInfo = CLightningRPC.getInstance().getInfo();
+    var getInfo = rpc.getInfo();
     CLightningMetricOne metricOne =
         diagnostic.getMetricWithImplementation("metric_one", CLightningMetricOne.class);
     TestCase.assertEquals(getInfo.getId(), metricOne.getNodeId());
