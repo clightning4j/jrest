@@ -3,8 +3,13 @@ package io.vincenzopalazzo.lightning.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.javalin.plugin.json.JavalinJackson;
+import io.vincenzopalazzo.lightning.rest.model.rpc.type.CLightningVerifyMessage;
+import io.vincenzopalazzo.lightning.rest.model.rpc.type.ClightningSignMessage;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
+import java.io.IOException;
+import java.util.HashMap;
 import jrpc.clightning.exceptions.CLightningException;
+import jrpc.wrapper.response.RPCResponseWrapper;
 import junit.framework.TestCase;
 import kong.unirest.Unirest;
 import org.junit.Test;
@@ -36,6 +41,39 @@ public class UtilsServiceTest extends AbstractServiceTest {
       LOGGER.debug("GET_listFunds response: " + response.getBody());
       assertThat(response.getStatus()).isEqualTo(200);
       assertThat(response.getBody()).isEqualTo(jsonResult);
+    } catch (CLightningException exception) {
+      TestCase.fail(exception.getLocalizedMessage());
+    }
+  }
+
+  @Test
+  public void POST_verifyMessage() throws IOException {
+    try {
+      var getInfo = rpc.getInfo();
+      var payload = new HashMap<String, Object>();
+      payload.put("message", "Hello from jrest");
+      var signRaw = rpc.rawCommand("signmessage", payload);
+      LOGGER.debug("POST_verifyMessage mock signmessage: " + signRaw);
+      RPCResponseWrapper<ClightningSignMessage> rawResponse = new RPCResponseWrapper<>();
+      rawResponse =
+          (RPCResponseWrapper<ClightningSignMessage>)
+              converter.deserialization(signRaw, rawResponse.getClass());
+      assertThat(rawResponse.getError()).isNull();
+      ClightningSignMessage signMessage = rawResponse.getResult();
+      var response =
+          Unirest.post("/utility/checkmessage")
+              .field("message", "Hello from jrest")
+              .field("zbase", signMessage.getZbase())
+              .field("pubkey", getInfo.getId())
+              .asString();
+
+      LOGGER.debug("POST_verifyMessage response: " + response.getBody());
+
+      assertThat(response.getStatus()).isEqualTo(200);
+      CLightningVerifyMessage verifyMessage =
+          (CLightningVerifyMessage)
+              converter.deserialization(response.getBody(), CLightningVerifyMessage.class);
+      assertThat(verifyMessage.getVerified()).isEqualTo(false);
     } catch (CLightningException exception) {
       TestCase.fail(exception.getLocalizedMessage());
     }

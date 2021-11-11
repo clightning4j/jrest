@@ -4,6 +4,7 @@ import io.vincenzopalazzo.lightning.rest.CLightningRestPlugin;
 import io.vincenzopalazzo.lightning.rest.PaymentServiceTest;
 import jrpc.clightning.CLightningRPC;
 import jrpc.clightning.LiteCLightningRPC;
+import jrpc.service.converters.JsonConverter;
 import kong.unirest.Unirest;
 import org.junit.After;
 import org.junit.Before;
@@ -18,6 +19,7 @@ public class AbstractServiceTest {
   protected CLightningRestPlugin app = new CLightningRestPlugin();
   protected CLightningRPC rpc = new CLightningRPC();
   protected LiteCLightningRPC liteRpc = new LiteCLightningRPC();
+  protected JsonConverter converter = new JsonConverter();
 
   public AbstractServiceTest() {
     Unirest.config().defaultBaseUrl(BASE_URL);
