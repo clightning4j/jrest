@@ -56,8 +56,8 @@ public class ServerUtils {
             });
 
     setBitcoinServices(serverInstance);
-    setUtilityServices(serverInstance);
-    setPaymentServices(serverInstance);
+    setUtilityServices(serverInstance, plugin);
+    setPaymentServices(serverInstance, plugin);
     setNetworkServices(serverInstance);
     setChannelServices(serverInstance);
     setRawCallServices(serverInstance);
@@ -66,7 +66,7 @@ public class ServerUtils {
     return serverInstance;
   }
 
-  private static void setPaymentServices(Javalin serverInstance) {
+  private static void setPaymentServices(Javalin serverInstance, ICLightningPlugin plugin) {
     String url = String.format("%s/%s", PAYMENT_SECTION, Command.LISTINVOICE.getCommandKey());
     serverInstance.get(url, PaymentService::listInvoice);
     serverInstance.post(url, PaymentService::listInvoiceFiltered);
@@ -89,12 +89,15 @@ public class ServerUtils {
     serverInstance.post(url, BitcoinServices::withdraw);
   }
 
-  private static void setUtilityServices(Javalin serverInstance) {
+  private static void setUtilityServices(Javalin serverInstance, ICLightningPlugin plugin) {
     String url = String.format("%s/%s", UTILITY_SECTION, Command.GETINFO.getCommandKey());
     serverInstance.get(url, UtilityServices::getInfo);
 
     url = String.format("%s/%s", UTILITY_SECTION, Command.LISTFOUNDS.getCommandKey());
     serverInstance.get(url, UtilityServices::listFunds);
+
+    url = String.format("%s/%s", UTILITY_SECTION, "checkmessage");
+    serverInstance.post(url, ctx -> UtilityServices.checkMessage(ctx, plugin));
   }
 
   private static void setNetworkServices(Javalin servicesInstance) {
