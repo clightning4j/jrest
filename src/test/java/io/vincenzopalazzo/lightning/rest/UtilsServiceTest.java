@@ -74,7 +74,7 @@ public class UtilsServiceTest extends AbstractServiceTest {
       CLightningVerifyMessage verifyMessage =
           (CLightningVerifyMessage)
               converter.deserialization(response.getBody(), CLightningVerifyMessage.class);
-      assertThat(verifyMessage.getVerified()).isEqualTo(false);
+      assertThat(verifyMessage.getVerified()).isEqualTo(true);
     } catch (CLightningException exception) {
       TestCase.fail(exception.getLocalizedMessage());
     }

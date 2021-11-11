@@ -88,20 +88,14 @@ public class UtilityServices {
       })
   public static void checkMessage(Context context, ICLightningPlugin plugin) {
     HashMap<String, Object> payload = new HashMap<>();
-    payload.put(
-        "message",
-        context
-            .formParamAsClass("message", String.class)
-            .check(i -> !i.isEmpty(), "message value is not empty")
-            .get());
-    payload.put(
-        "zbase",
-        context
-            .formParamAsClass("zbase", String.class)
-            .check(i -> !i.isEmpty(), "zbase value is not empty")
-            .get());
-    if (context.formParamAsClass("message", String.class).hasValue())
-      payload.put("message", context.formParamAsClass("pubkey", String.class).get());
+    payload.put("message", context.formParamAsClass("message", String.class).get());
+    payload.put("zbase", context.formParamAsClass("zbase", String.class).get());
+    if (context.formParamAsClass("pubkey", String.class).hasValue()) {
+      var pubKey = context.formParamAsClass("pubkey", String.class).get();
+      if (!pubKey.isEmpty()) payload.put("pubkey", pubKey);
+    }
+    plugin.log(
+        PluginLog.DEBUG, "checkmessage payload: " + new JsonConverter().serialization(payload));
     context.future(
         verifyMessage(context, plugin, payload),
         result -> {
