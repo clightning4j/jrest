@@ -6,7 +6,6 @@ import static org.junit.Assume.assumeThat;
 
 import io.javalin.plugin.json.JavalinJackson;
 import io.vincenzopalazzo.lightning.testutil.AbstractServiceTest;
-import jrpc.clightning.CLightningRPC;
 import junit.framework.TestCase;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -18,7 +17,7 @@ public class NetworkServiceTest extends AbstractServiceTest {
   public void GET_ping() {
     assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
     try {
-      var nodeInfo = CLightningRPC.getInstance().getInfo();
+      var nodeInfo = rpc.getInfo();
       HttpResponse response = Unirest.get("/network/ping/" + nodeInfo.getId()).asString();
       LOGGER.debug("POST_invoice response: " + response.getBody().toString());
       assertThat(response.getStatus()).isEqualTo(500);
@@ -32,7 +31,7 @@ public class NetworkServiceTest extends AbstractServiceTest {
   public void GET_listNodes() {
     assumeThat(rpc.getInfo().getNetwork(), is("testnet"));
     try {
-      var allNodes = CLightningRPC.getInstance().listNodes();
+      var allNodes = rpc.listNodes();
       String asString = new JavalinJackson().toJsonString(allNodes);
       HttpResponse response = Unirest.get("/network/listnodes").asString();
       LOGGER.debug("POST_invoice response: " + response.getBody().toString());

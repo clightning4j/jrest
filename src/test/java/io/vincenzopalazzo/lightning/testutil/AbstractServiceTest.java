@@ -3,6 +3,7 @@ package io.vincenzopalazzo.lightning.testutil;
 import io.vincenzopalazzo.lightning.rest.CLightningRestPlugin;
 import io.vincenzopalazzo.lightning.rest.PaymentServiceTest;
 import jrpc.clightning.CLightningRPC;
+import jrpc.clightning.LiteCLightningRPC;
 import kong.unirest.Unirest;
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +16,8 @@ public class AbstractServiceTest {
   protected static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceTest.class);
 
   protected CLightningRestPlugin app = new CLightningRestPlugin();
-  protected CLightningRPC rpc = CLightningRPC.getInstance();
+  protected CLightningRPC rpc = new CLightningRPC();
+  protected LiteCLightningRPC liteRpc = new LiteCLightningRPC();
 
   public AbstractServiceTest() {
     Unirest.config().defaultBaseUrl(BASE_URL);
