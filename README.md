@@ -1,56 +1,58 @@
-# JRest: A java plugin for c-lightning
+# 
 
-It is a java plugin to access to c-lightning with rest protocol.
+<div align="center">
+  <h1>:zap: JRest :zap:</h1>
 
-The plugin is under development and all logic at the moment is inside the class
-`CLightningRestPlugin`.
+  <img src="https://github.com/clightning4j/icons/raw/main/org/ic_launcher/res/mipmap-xxxhdpi/ic_launcher.png" />
 
-[@vincenzopalazzo](https://github.com/vincenzopalazzo) is the developer of this
-plugin and the motivation that he is developing this plugin is because he is
-testing the [JRPCLightning](https://github.com/vincenzopalazzo/JRPClightning)
-library.
+  <p>
+    <strong> :zap: JRest: A plugin for c-lightning to expose the API over rest :zap: </strong>
+  </p>
 
-## [JRPCLightning](https://github.com/vincenzopalazzo/JRPClightning)
+  <p>
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/clightning4j/jrest/Integration%20testing?style=flat-square">
+     <a href="https://github.com/clightning4j/JRPClightning/discussions">
+      <img alt="GitHub Workflow Status" src="https://img.shields.io/badge/Discussion-Join-green">
+     </a>
+  </p>
+</div>
 
-It is a simple wrapper for c-lightning RPC, this project is inspired by this
-[pull request](https://github.com/ElementsProject/lightning/pull/2223) by
-@renepickhardt.
+## Table of Content
 
-The wrapper aims to be versatile, the final version should allow the user to
-execute commands even of custom plugins, allowing them to write the code for the
-command.
+- Introduction
+- How to Use
+- Example
+- Who
+- Support
+- License
 
-## Compile plugin
+## Introduction
 
-Go to the root directory and run `./gradlew jar` at the end of the procedure you
-can find the jar in the directory `build/libs`
+A Java plugin for c-lightning to expose the API over rest!
 
-## Run Plugin
+## How to Use
 
-How rung the plugin inside on lightning
+TODO: open a discussion to receive more feedback
 
-Inside the root directory, there is a file called `run.sh`, it contains a single
-line, and it is
+### Compile plugin
 
-`java -jar /home/vincent/Github/lightning-rest/build/libs/lightning-rest.jar`
+TODO, for now open a discussion :)
 
-The path of jar, in this case, is
-`/home/vincent/Github/lightning-rest/build/libs/` but you can change it.
-
-## Install plugin
+### Link the plugin in c-lightning
 
 You can run the plugin in a different way
 
-You can insert the path of file `run.sh` inside the lightning conf file with the
+You can insert the path of file `lightning-rest-gen.sh` inside the lightning conf file with the
 tag `plugin=YOUR_PATH` and run lightningd. In this case, you can insert the port
 that you want the server running with the propriety
-`lightningd --jrest-port=8000`.
+`lightningd --jrest-port=7000`.
 
-you can run the plugin also dynamically from
+In addition, you can run the plugin also dynamically from
 `lightning-cli plugin start YOUR_PATH` and the server runs on the port 7001 by
 default.
 
-## Run and Stop Server
+## Example
+
 
 When you have installed the plugin, you can run it with the following command>
 
@@ -78,10 +80,51 @@ browser
 }
 ```
 
-## Conclusion
+## Who
+
+[@vincenzopalazzo](https://github.com/vincenzopalazzo) is the developer of this
+plugin and the motivation that he is developing this plugin is because he is
+testing the [JRPCLightning](https://github.com/vincenzopalazzo/JRPClightning)
+library.
 
 All feedback are welcome :)
 
 PS: The creator of this repository are searching a maintainer of this library,
 if you like to work inside this repository to learn can write an email to
 <vincenzopalazzodev@gmail.com>
+
+## Support
+
+TODO: for now look inside the [JRPCLightning](https://github.com/vincenzopalazzo/JRPClightning)
+
+## License
+
+<div align="center">
+  <img src="https://opensource.org/files/osi_keyhole_300X300_90ppi_0.png" width="150" height="150"/>
+</div>
+
+```
+MIT License
+
+A Java plugin for c-lightning to expose the API over rest!
+Copyright (c) 2020-21 Vincenzo Palazzo <vincenzopalazzodev@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
