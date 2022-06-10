@@ -18,7 +18,8 @@
 ## Table of Content
 
 - Introduction
-- How to Use
+- Install
+- Plugin parameter
 - Example
 - Who
 - Support
@@ -28,31 +29,26 @@
 
 A Java plugin for c-lightning to expose the API over rest!
 
-## How to Use
+## Install
 
-TODO: open a discussion to receive more feedback
+Java produces a jar and c-lightning needs a bash script to run it! 
+The gradle script compiles the plugin and generate a bash script with the command `./gradlew createRunnableScript`
 
-## Plugin parameter
-
-- jrest-port: the port where you want to run the plugin
-- jrest-on-startup: run the server at startup with core lightning
-
-### Compile plugin
-
-TODO, for now open it is a discussion :)
+After the gradle process, you have the jar inside the `build/libs/lightning-rest.jar` and the script `lightning-rest-gen.sh` 
+in the root directory of the project.
 
 ### Link the plugin in core lightning
 
 You can run the plugin in a different way
 
-You can insert the path of file `lightning-rest-gen.sh` inside the lightning conf file with the
-tag `plugin=YOUR_PATH` and run lightningd. In this case, you can insert the port
-that you want the server running with the propriety
-`lightningd --jrest-port=7000`.
+You can insert the path of file `lightning-rest-gen.sh` inside the lightning conf file with the tag `plugin=YOUR_PATH` and run lightningd. In this case, you can insert the port that you want the server running with the propriety `lightningd --jrest-port=7000`.
 
-In addition, you can run the plugin also dynamically from
-`lightning-cli plugin start YOUR_PATH` and the server runs on the port 7001 by
-default.
+In addition, you can run the plugin also dynamically from `lightning-cli plugin start YOUR_PATH` and the server runs on the port `7000` by default.
+
+## Plugin parameter
+
+- jrest-port: the port where you want to run the plugin
+- jrest-on-startup: run the server at startup with core lightning
 
 ## Example
 
