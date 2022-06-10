@@ -1,5 +1,3 @@
-# 
-
 <div align="center">
   <h1>:zap: JRest :zap:</h1>
 
@@ -34,11 +32,16 @@ A Java plugin for c-lightning to expose the API over rest!
 
 TODO: open a discussion to receive more feedback
 
+## Plugin parameter
+
+- jrest-port: the port where you want to run the plugin
+- jrest-on-startup: run the server at startup with core lightning
+
 ### Compile plugin
 
-TODO, for now open a discussion :)
+TODO, for now open it is a discussion :)
 
-### Link the plugin in c-lightning
+### Link the plugin in core lightning
 
 You can run the plugin in a different way
 
@@ -67,7 +70,7 @@ When you have installed the plugin, you can run it with the following command>
 ```
 
 You can visit the documentation of server rest at link
-[http://localhost:7000/jrest-ui#/](http://localhost:7000/jrest-ui#/) on your
+[http://localhost:7000/ui](http://localhost:7000/ui) on your
 browser
 
 - `lightning-cli restserver stop`: This command stop the server and the caller
