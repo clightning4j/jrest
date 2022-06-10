@@ -100,8 +100,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
     if (onStartupCalled != null && !onStartupCalled) {
       response.add("message", "Waiting first initialization by c-lightning");
     } else {
-      if (serverInstance == null)
-        serverInstance = ServerUtils.buildServerInstance(plugin);
+      if (serverInstance == null) serverInstance = ServerUtils.buildServerInstance(plugin);
       JsonArray params = request.get("params").getAsJsonArray();
       if (params.isEmpty()) {
         response.add("error", "JSON array is empty we need to know the operation, start or stop");
