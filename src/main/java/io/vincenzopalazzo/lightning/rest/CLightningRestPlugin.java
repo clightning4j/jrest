@@ -1,15 +1,14 @@
 package io.vincenzopalazzo.lightning.rest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import io.javalin.Javalin;
 import io.vincenzopalazzo.lightning.rest.utils.ServerUtils;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
-import jrpc.clightning.annotation.Hook;
 import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
+import jrpc.clightning.annotation.Subscription;
 import jrpc.clightning.exceptions.CLightningException;
 import jrpc.clightning.plugins.CLightningPlugin;
 import jrpc.clightning.plugins.ICLightningPlugin;
@@ -50,7 +49,7 @@ public class CLightningRestPlugin extends CLightningPlugin {
   public void onInit(
       ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
     super.onInit(plugin, request, response);
-    if (onStartup) {
+    if (onStartup && serverInstance == null) {
       this.onStartupCalled = false;
       Timer timer = new Timer();
       timer.schedule(
@@ -101,15 +100,15 @@ public class CLightningRestPlugin extends CLightningPlugin {
     if (onStartupCalled != null && !onStartupCalled) {
       response.add("message", "Waiting first initialization by c-lightning");
     } else {
-      if (serverInstance == null) serverInstance = ServerUtils.buildServerInstance(plugin);
-      if (!request.get("params").isJsonArray())
-        throw new CLightningPluginException(-1, "Params is not a JSON array");
+      if (serverInstance == null)
+        serverInstance = ServerUtils.buildServerInstance(plugin);
       JsonArray params = request.get("params").getAsJsonArray();
       if (params.isEmpty()) {
         response.add("error", "JSON array is empty we need to know the operation, start or stop");
         return;
       }
       String operation = params.get(0).getAsString();
+      plugin.log(PluginLog.INFO, "Operation from rpc method " + operation);
       switch (operation) {
         case "start":
           {
@@ -142,26 +141,10 @@ public class CLightningRestPlugin extends CLightningPlugin {
     }
   }
 
-  @Hook(hook = "rpc_command")
-  public void interceptorRPCCommands(
-      CLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-    if (!request.get("params").isJsonObject()) {
-      plugin.log(
-          PluginLog.ERROR,
-          "rpc_command object need to be a JSON Object, we receive the following response \n"
-              + request.getAsString());
-      response.add("result", "continue");
-      return;
-    }
-    JsonObject params = request.get("params").getAsJsonObject();
-    if (params.has("rpc_command")) {
-      JsonObject rpcMethod = params.get("rpc_command").getAsJsonObject();
-      if (rpcMethod.get("method").getAsString().equals("stop") && this.serverInstance != null) {
-        this.serverInstance.stop();
-        plugin.log(PluginLog.INFO, "Stopping Server Instance");
-      }
-    }
-    response.add("result", "continue");
+  @Subscription(notification = "shutdown")
+  public void shutdown(CLightningJsonObject data) {
+    if (this.serverInstance != null) this.serverInstance.stop();
+    System.exit(0);
   }
 
   public void testModeOne() {
